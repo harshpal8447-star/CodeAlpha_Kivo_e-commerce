@@ -1,0 +1,37 @@
+{
+  "name": "kivo-ecommerce",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Kivo - Complete Professional E-Commerce Web Application",
+  "main": "server/src/server.js",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "node server/src/server.js",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:seed": "node prisma/seed.js",
+    "db:setup": "npm run db:push && npm run db:seed",
+    "test": "npm run test --prefix server",
+    "test:client": "npm run test --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "@prisma/client": "^5.14.0",
+    "prisma": "^5.14.0"
+  },
+  "keywords": [
+    "ecommerce",
+    "react",
+    "express",
+    "prisma",
+    "tailwindcss",
+    "kivo"
+  ],
+  "author": "Kivo Team",
+  "license": "ISC"
+}
