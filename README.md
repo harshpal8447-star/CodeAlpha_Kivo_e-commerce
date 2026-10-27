@@ -140,43 +140,52 @@ The application utilizes a normalized relational database schema structured thro
 
 - **Node.js**: v18.0.0 or later (v20+ recommended)
 - **npm**: v9.0.0 or later
+- **Docker Desktop**: Required on Windows for automated containerized PostgreSQL (`kivo-postgres`)
 - **Operating System**: Windows 10/11, macOS, or Linux
 
 ---
 
-## 7. Quick Start & Setup Instructions (Windows)
+## 7. One-Command Development Workflow (`npm run dev`)
 
-### Step 1: Clone and Enter the Directory
-```powershell
-cd "c:\Users\Harsh Pal\Kivo"
-```
+Kivo is engineered for a seamless single-command developer experience. Once initial setup is completed, **you do not need to open three terminals** or run separate commands for the database, backend, and frontend.
 
-### Step 2: Install All Dependencies
-Install dependencies for root, backend, and frontend with a single command:
-```powershell
-npm run install:all
-```
+### Initial One-Time Setup (Windows)
 
-### Step 3: Configure Environment Variables
-Copy the provided `.env.example` file to `.env`:
-```powershell
-Copy-Item .env.example .env
-Copy-Item .env.example server\.env
-```
+1. **Install Docker Desktop for Windows**:
+   - Download: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+   - Start Docker Desktop and ensure the whale indicator shows **"Engine running"**.
+2. **Install Project Dependencies**:
+   ```powershell
+   npm run install:all
+   ```
 
-### Step 4: Initialize Database and Seed Data
-Generate the Prisma client, push the schema to the database, and seed realistic products, categories, users, and orders:
-```powershell
-npm run db:setup
-```
+### Daily Development Startup
 
-### Step 5: Start the Full-Stack Application
-Start both the Express backend (`http://localhost:5000`) and the Vite React frontend (`http://localhost:5173`) concurrently:
+Simply run **one command** from the project root:
+
 ```powershell
 npm run dev
 ```
 
-Visit **`http://localhost:5173`** in your browser.
+#### What `npm run dev` does automatically:
+1. **Verifies Environment**: Validates your `.env` configuration (auto-creates from `.env.example` if missing).
+2. **Verifies Docker**: Inspects the local Docker engine and confirms Docker Desktop is active.
+3. **Starts PostgreSQL Database**: Launches the `kivo-postgres` container using `docker-compose.yml` on port `5432` with a persistent named volume (`kivo_postgres_data`).
+4. **Waits for Database Health**: Actively probes PostgreSQL's health check (`pg_isready`) until the database is ready to accept connections.
+5. **Applies Prisma Migrations**: Safely applies pending schema migrations to PostgreSQL (`npx prisma migrate deploy`) without data loss.
+6. **Launches Applications Concurrently**:
+   - `[api]` **Express Backend**: [http://localhost:5000](http://localhost:5000) (Health: `/api/health`)
+   - `[client]` **Vite React Frontend**: [http://localhost:5173](http://localhost:5173)
+7. **Graceful Fault Tolerance**: Displays distinct colored tags (`[api]` and `[client]`). If either service exits with an error, the failure is immediately obvious and cleanly halts the dependent processes.
+
+### Stopping the Development Environment
+
+When you are done developing:
+- Press `Ctrl + C` in the running terminal to terminate the frontend and backend servers.
+- Run `npm run dev:stop` to cleanly stop and remove the PostgreSQL container:
+  ```powershell
+  npm run dev:stop
+  ```
 
 ---
 
@@ -186,16 +195,18 @@ From the root project directory:
 
 | Command | Purpose |
 | :--- | :--- |
-| `npm run dev` | Runs both backend API and frontend dev server concurrently |
-| `npm run dev:server` | Runs Express backend with nodemon |
-| `npm run dev:client` | Runs Vite React frontend dev server |
+| **`npm run dev`** | **Master one-command startup**: boots Docker PostgreSQL, waits for health check, migrates schema, and launches frontend + backend concurrently |
+| **`npm run dev:stop`** | Cleanly stops the Docker PostgreSQL container (`docker compose down`) |
+| `npm run dev:services` | Runs Express backend and Vite frontend concurrently without Docker orchestrator |
+| `npm run dev:server` | Runs Express backend independently with nodemon |
+| `npm run dev:client` | Runs Vite React frontend dev server independently |
 | `npm run build` | Compiles the production frontend bundle into `client/dist` |
-| `npm run db:generate` | Generates Prisma client types |
-| `npm run db:push` | Pushes the Prisma schema to the database |
-| `npm run db:seed` | Seeds database with 17+ realistic products, categories, reviews, and demo users |
-| `npm run db:setup` | Runs `db:push` followed by `db:seed` |
-| `npm run test` | Executes backend API integration tests with Supertest and Vitest |
+| `npm test` | Executes backend API integration tests with Supertest and Vitest |
 | `npm run test:client` | Executes frontend unit tests with Vitest |
+| `npm run db:migrate` | Applies pending Prisma migrations to PostgreSQL (`npx prisma migrate deploy`) |
+| `npm run db:seed` | Seeds database with 17+ realistic products, categories, reviews, and demo users |
+| `npm run db:setup` | Runs `npm run db:migrate` followed by `npm run db:seed` |
+| `npm run db:generate` | Regenerates Prisma Client types |
 
 ---
 
