@@ -1,12 +1,12 @@
-// Kivo E-Commerce Database Schema (PostgreSQL)
+// Kivo E-Commerce Database Schema (SQLite Local Zero-Docker)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -21,8 +21,6 @@ model User {
   reviews      Review[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-
-  @@index([email])
 }
 
 model Address {
@@ -39,8 +37,6 @@ model Address {
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  @@index([userId])
 }
 
 model Category {
@@ -75,9 +71,6 @@ model Product {
   reviews        Review[]
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-
-  @@index([categoryId])
-  @@index([isFeatured])
 }
 
 model Cart {
@@ -122,9 +115,6 @@ model Order {
   payments        Payment[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-
-  @@index([userId])
-  @@index([status])
 }
 
 model OrderItem {
@@ -139,8 +129,6 @@ model OrderItem {
   unitPrice    Float    // Frozen price at purchase time
   quantity     Int
   total        Float
-
-  @@index([orderId])
 }
 
 model Payment {
@@ -154,8 +142,6 @@ model Payment {
   transactionId String   @unique
   metadata      String?  // JSON metadata
   createdAt     DateTime @default(now())
-
-  @@index([orderId])
 }
 
 model Review {
@@ -169,7 +155,4 @@ model Review {
   comment          String
   verifiedPurchase Boolean  @default(true)
   createdAt        DateTime @default(now())
-
-  @@index([productId])
-  @@index([userId])
 }

@@ -7,6 +7,7 @@
   "scripts": {
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "dev": "node scripts/dev.js",
+    "dev:local": "node scripts/dev-local.js",
     "dev:stop": "node scripts/stop.js",
     "dev:services": "concurrently -n \"api,client\" -c \"cyan,magenta\" --kill-others \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "npm run dev --prefix server",

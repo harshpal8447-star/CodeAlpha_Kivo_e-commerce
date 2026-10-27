@@ -147,17 +147,19 @@ async function main() {
   if (!dockerStatus.installed) {
     console.log(`
   ${colors.red}${colors.bold}✖ DOCKER IS NOT DETECTED ON YOUR SYSTEM${colors.reset}
-  
-  Kivo requires Docker Desktop on Windows to launch the PostgreSQL database.
-  
-  ${colors.bold}One-Time Setup Instructions:${colors.reset}
+
+  Kivo's PostgreSQL database runs in Docker for reproducible environments.
+
+  ${colors.bold}Option 1: Complete the one-time Docker setup (Recommended for PostgreSQL):${colors.reset}
   1. Download Docker Desktop for Windows:
      ${colors.cyan}https://www.docker.com/products/docker-desktop${colors.reset}
   2. Complete installation and launch Docker Desktop.
   3. Ensure the bottom-left whale icon shows "Engine running".
   4. Run again: ${colors.bold}npm run dev${colors.reset}
-  
-  ${colors.dim}(To stop development at any time, run: npm run dev:stop)${colors.reset}
+
+  ${colors.bold}Option 2: Run immediately without Docker (Zero-dependency local mode):${colors.reset}
+  Run: ${colors.bold}${colors.green}npm run dev:local${colors.reset}
+  (Starts the frontend, backend, and disk-backed database immediately on Windows)
     `);
     process.exit(1);
   }
@@ -165,10 +167,13 @@ async function main() {
   if (!dockerStatus.running) {
     console.log(`
   ${colors.yellow}${colors.bold}⚠ DOCKER DESKTOP IS INSTALLED BUT NOT CURRENTLY RUNNING${colors.reset}
-  
+
   Please start the Docker Desktop application from your Windows Start Menu.
   Once Docker Desktop displays "Engine running", re-run:
     ${colors.bold}npm run dev${colors.reset}
+
+  ${colors.bold}Alternatively, run without Docker right now:${colors.reset}
+  Run: ${colors.bold}${colors.green}npm run dev:local${colors.reset}
     `);
     process.exit(1);
   }
