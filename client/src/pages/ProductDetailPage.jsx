@@ -15,6 +15,7 @@ import {
 import { productService } from '../services/product.service.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { formatINR } from '../utils/currency.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 import ProductGrid from '../components/product/ProductGrid.jsx';
 
@@ -222,11 +223,11 @@ export const ProductDetailPage = () => {
           {/* Pricing */}
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-baseline gap-3">
             <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
-              ${product.price.toFixed(2)}
+              {formatINR(product.price)}
             </span>
             {hasDiscount && (
               <span className="text-base text-slate-400 line-through">
-                ${product.compareAtPrice.toFixed(2)}
+                {formatINR(product.compareAtPrice)}
               </span>
             )}
             <span className="text-xs text-teal-700 dark:text-teal-400 font-semibold ml-auto">
@@ -251,7 +252,7 @@ export const ProductDetailPage = () => {
                 ? 'Currently Out of Stock'
                 : isLowStock
                 ? `Low Stock: Only ${product.stock} units remaining`
-                : `${product.stock} units available in Portland warehouse`}
+                : `${product.stock} units available in Mumbai central fulfillment hub`}
             </span>
           </div>
 
@@ -309,7 +310,7 @@ export const ProductDetailPage = () => {
           <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800 space-y-2.5 text-xs text-slate-500">
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-teal-600 flex-shrink-0" />
-              <span>Complimentary insured shipping on orders over $50</span>
+              <span>Complimentary insured shipping on orders over ₹999 across India</span>
             </div>
             <div className="flex items-center gap-2">
               <RotateCcw className="w-4 h-4 text-teal-600 flex-shrink-0" />

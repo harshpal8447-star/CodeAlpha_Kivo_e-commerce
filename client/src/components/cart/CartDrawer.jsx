@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Truck } from 'lucide-react';
 import { useCart } from '../../context/CartContext.jsx';
+import { formatINR } from '../../utils/currency.js';
 
 export const CartDrawer = () => {
   const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
@@ -9,7 +10,7 @@ export const CartDrawer = () => {
 
   if (!isCartOpen) return null;
 
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = 999;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cart.subtotal);
   const freeShippingProgress = Math.min(100, (cart.subtotal / freeShippingThreshold) * 100);
 
@@ -52,7 +53,7 @@ export const CartDrawer = () => {
                 <div className="flex items-center gap-1.5 text-teal-900 dark:text-teal-200 font-medium">
                   <Truck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                   <span>
-                    Add <strong className="font-bold">${remainingForFreeShipping.toFixed(2)}</strong> more for <strong>Complimentary Express Shipping</strong>
+                    Add <strong className="font-bold">{formatINR(remainingForFreeShipping)}</strong> more for <strong>Complimentary Express Shipping</strong>
                   </span>
                 </div>
                 <div className="w-full bg-teal-200/60 dark:bg-teal-900 h-1.5 rounded-full overflow-hidden">
@@ -124,7 +125,7 @@ export const CartDrawer = () => {
                         </button>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        ${item.price.toFixed(2)} each
+                        {formatINR(item.price)} each
                       </p>
                     </div>
 
@@ -151,7 +152,7 @@ export const CartDrawer = () => {
 
                       {/* Line Total */}
                       <span className="text-sm font-bold text-slate-900 dark:text-white">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatINR(item.price * item.quantity)}
                       </span>
                     </div>
                   </div>
@@ -167,17 +168,17 @@ export const CartDrawer = () => {
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900 dark:text-white">
-                    ${cart.subtotal.toFixed(2)}
+                    {formatINR(cart.subtotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-500 text-xs">
                   <span>Shipping</span>
-                  <span>{cart.shipping === 0 ? 'Free' : `$${cart.shipping.toFixed(2)}`}</span>
+                  <span>{cart.shipping === 0 ? 'Free' : formatINR(cart.shipping)}</span>
                 </div>
                 <div className="flex justify-between text-base font-bold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-800">
                   <span>Estimated Total</span>
                   <span className="text-teal-700 dark:text-teal-400">
-                    ${cart.total.toFixed(2)}
+                    {formatINR(cart.total)}
                   </span>
                 </div>
               </div>

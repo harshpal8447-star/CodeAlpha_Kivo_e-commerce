@@ -69,11 +69,11 @@ export const ProductFilters = ({
       {/* Price Range */}
       <div className="space-y-2.5">
         <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Price Range ($)
+          Price Range (₹)
         </label>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="text-[10px] text-slate-400">Min</span>
+            <span className="text-[10px] text-slate-400">Min (₹)</span>
             <input
               type="number"
               placeholder="0"
@@ -83,10 +83,10 @@ export const ProductFilters = ({
             />
           </div>
           <div>
-            <span className="text-[10px] text-slate-400">Max</span>
+            <span className="text-[10px] text-slate-400">Max (₹)</span>
             <input
               type="number"
-              placeholder="500"
+              placeholder="50000"
               value={maxPrice}
               onChange={(e) => onPriceChange('max', e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-teal-600"

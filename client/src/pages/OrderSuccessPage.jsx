@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { CheckCircle2, Package, Truck, ArrowRight, ShoppingBag } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
+import { formatINR } from '../utils/currency.js';
 
 export const OrderSuccessPage = () => {
   const { orderId } = useParams();
@@ -97,7 +98,7 @@ export const OrderSuccessPage = () => {
                   </div>
                 </div>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  ${item.total.toFixed(2)}
+                  {formatINR(item.total)}
                 </span>
               </div>
             ))}
@@ -128,16 +129,16 @@ export const OrderSuccessPage = () => {
             </h4>
             <div className="flex justify-between sm:justify-end gap-6 text-slate-500">
               <span>Subtotal:</span>
-              <span>${order?.subtotal?.toFixed(2)}</span>
+              <span>{formatINR(order?.subtotal || 0)}</span>
             </div>
             <div className="flex justify-between sm:justify-end gap-6 text-slate-500">
               <span>Shipping:</span>
-              <span>{order?.shippingFee === 0 ? 'Complimentary' : `$${order?.shippingFee?.toFixed(2)}`}</span>
+              <span>{order?.shippingFee === 0 ? 'Complimentary' : formatINR(order?.shippingFee || 0)}</span>
             </div>
             <div className="flex justify-between sm:justify-end gap-6 text-base font-extrabold text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-700">
               <span>Total Paid:</span>
               <span className="text-teal-700 dark:text-teal-400">
-                ${order?.total?.toFixed(2)}
+                {formatINR(order?.total || 0)}
               </span>
             </div>
           </div>

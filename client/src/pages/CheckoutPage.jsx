@@ -16,6 +16,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { orderService } from '../services/order.service.js';
 import { authService } from '../services/auth.service.js';
+import { formatINR } from '../utils/currency.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 
 export const CheckoutPage = () => {
@@ -38,7 +39,7 @@ export const CheckoutPage = () => {
     city: '',
     state: '',
     postalCode: '',
-    country: 'United States',
+    country: 'India',
     phone: '',
   });
 
@@ -167,8 +168,8 @@ export const CheckoutPage = () => {
 
   const discount = passedPromo === 'KIVO10' ? parseFloat((cart.subtotal * 0.1).toFixed(2)) : 0;
   const discountedSubtotal = Math.max(0, cart.subtotal - discount);
-  const shippingFee = discountedSubtotal >= 50 ? 0 : 5.99;
-  const tax = parseFloat((discountedSubtotal * 0.08).toFixed(2));
+  const shippingFee = discountedSubtotal >= 999 ? 0 : 99;
+  const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
   const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 
   return (
@@ -281,7 +282,7 @@ export const CheckoutPage = () => {
                     name="street"
                     value={shippingForm.street}
                     onChange={handleInputChange}
-                    placeholder="742 Evergreen Terrace, Suite 4B"
+                    placeholder="Flat 402, Lotus Residency, Powai"
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-600"
                   />
                 </div>
@@ -296,14 +297,14 @@ export const CheckoutPage = () => {
                     name="city"
                     value={shippingForm.city}
                     onChange={handleInputChange}
-                    placeholder="Portland"
+                    placeholder="Mumbai"
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-600"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    State / Province *
+                    State *
                   </label>
                   <input
                     type="text"
@@ -311,14 +312,14 @@ export const CheckoutPage = () => {
                     name="state"
                     value={shippingForm.state}
                     onChange={handleInputChange}
-                    placeholder="OR"
+                    placeholder="Maharashtra"
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-600"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    ZIP / Postal Code *
+                    PIN / Postal Code *
                   </label>
                   <input
                     type="text"
@@ -326,7 +327,7 @@ export const CheckoutPage = () => {
                     name="postalCode"
                     value={shippingForm.postalCode}
                     onChange={handleInputChange}
-                    placeholder="97201"
+                    placeholder="400076"
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-600"
                   />
                 </div>
@@ -379,12 +380,12 @@ export const CheckoutPage = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                      Kivo Development Payment Simulator
+                      UPI, NetBanking & Cards (Razorpay / Instant Simulator)
                     </span>
                     <ShieldCheck className="w-4 h-4 text-teal-600" />
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Instant sandbox transaction simulator for evaluating order creation and stock decrements.
+                    Instant sandbox transaction simulator supporting UPI, RuPay, debit/credit cards, and net banking.
                   </p>
 
                   {/* Simulator Outcome Chooser */}
@@ -435,12 +436,12 @@ export const CheckoutPage = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                      Cash on Delivery (Pay at Handover)
+                      Cash on Delivery / UPI at Handover
                     </span>
                     <Banknote className="w-4 h-4 text-slate-500" />
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Order confirmed immediately. Balance settled upon parcel inspection at your address.
+                    Order confirmed immediately. Balance settled in cash or via QR scan upon parcel inspection.
                   </p>
                 </div>
               </label>
@@ -473,7 +474,7 @@ export const CheckoutPage = () => {
                     </div>
                   </div>
                   <span className="font-extrabold text-slate-900 dark:text-white">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {formatINR(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
@@ -484,31 +485,31 @@ export const CheckoutPage = () => {
               <div className="flex justify-between text-slate-500">
                 <span>Subtotal</span>
                 <span className="font-semibold text-slate-900 dark:text-white">
-                  ${cart.subtotal.toFixed(2)}
+                  {formatINR(cart.subtotal)}
                 </span>
               </div>
 
               {discount > 0 && (
                 <div className="flex justify-between text-teal-700 dark:text-teal-400 font-semibold">
                   <span>Discount ({passedPromo})</span>
-                  <span>-${discount.toFixed(2)}</span>
+                  <span>-{formatINR(discount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between text-slate-500">
                 <span>Shipping</span>
-                <span>{shippingFee === 0 ? 'Complimentary' : `$${shippingFee.toFixed(2)}`}</span>
+                <span>{shippingFee === 0 ? 'Complimentary' : formatINR(shippingFee)}</span>
               </div>
 
               <div className="flex justify-between text-slate-500">
-                <span>Estimated Tax (8%)</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>Estimated GST (18%)</span>
+                <span>{formatINR(tax)}</span>
               </div>
 
               <div className="flex justify-between text-base font-extrabold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-700">
                 <span>Total Due</span>
                 <span className="text-teal-700 dark:text-teal-400 font-extrabold">
-                  ${grandTotal.toFixed(2)}
+                  {formatINR(grandTotal)}
                 </span>
               </div>
             </div>
@@ -522,7 +523,7 @@ export const CheckoutPage = () => {
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Place Order (${grandTotal.toFixed(2)})</span>
+                  <span>Place Order ({formatINR(grandTotal)})</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

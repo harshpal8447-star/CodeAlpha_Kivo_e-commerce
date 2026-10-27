@@ -92,8 +92,8 @@ export const createOrder = async (req, res, next) => {
     }
 
     const discountedSubtotal = Math.max(0, calculatedSubtotal - discount);
-    const shippingFee = discountedSubtotal >= 50 ? 0.0 : 5.99;
-    const tax = parseFloat((discountedSubtotal * 0.08).toFixed(2));
+    const shippingFee = discountedSubtotal >= 999 ? 0.0 : 99.0;
+    const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
     const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 
     // Handle payment simulation mode
@@ -151,7 +151,7 @@ export const createOrder = async (req, res, next) => {
           payments: {
             create: {
               amount: grandTotal,
-              currency: 'USD',
+              currency: 'INR',
               provider: paymentMethod,
               status: paymentStatus,
               transactionId,

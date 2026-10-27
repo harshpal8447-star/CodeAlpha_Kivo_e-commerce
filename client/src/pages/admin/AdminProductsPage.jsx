@@ -12,6 +12,7 @@ import {
 import { adminService } from '../../services/admin.service.js';
 import { productService } from '../../services/product.service.js';
 import { useCart } from '../../context/CartContext.jsx';
+import { formatINR } from '../../utils/currency.js';
 
 export const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -220,7 +221,7 @@ export const AdminProductsPage = () => {
                       {p.category?.name || 'Uncategorized'}
                     </td>
                     <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                      ${p.price.toFixed(2)}
+                      {formatINR(p.price)}
                     </td>
                     <td className="py-3 px-4">
                       <span
@@ -329,7 +330,7 @@ export const AdminProductsPage = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Price ($) *</label>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -340,7 +341,7 @@ export const AdminProductsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Compare At ($)</label>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Compare At (₹)</label>
                   <input
                     type="number"
                     step="0.01"

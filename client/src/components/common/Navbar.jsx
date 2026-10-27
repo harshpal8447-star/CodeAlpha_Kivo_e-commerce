@@ -53,7 +53,7 @@ export const Navbar = () => {
     <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
       {/* Top promotional announcement bar */}
       <div className="bg-slate-900 dark:bg-slate-950 text-slate-200 text-xs py-1.5 px-4 text-center font-medium tracking-wide">
-        <span>Complimentary express delivery on orders over $50 &bull; 30-Day Hassle-Free Returns</span>
+        <span>Complimentary express delivery across India on orders over ₹999 &bull; 30-Day Hassle-Free Returns</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

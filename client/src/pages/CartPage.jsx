@@ -12,6 +12,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
+import { formatINR } from '../utils/currency.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 
 export const CartPage = () => {
@@ -37,8 +38,8 @@ export const CartPage = () => {
   };
 
   const finalSubtotal = Math.max(0, cart.subtotal - promoDiscount);
-  const finalShipping = finalSubtotal === 0 || finalSubtotal >= 50 ? 0 : 5.99;
-  const finalTax = parseFloat((finalSubtotal * 0.08).toFixed(2));
+  const finalShipping = finalSubtotal === 0 || finalSubtotal >= 999 ? 0 : 99;
+  const finalTax = parseFloat((finalSubtotal * 0.18).toFixed(2));
   const finalTotal = parseFloat((finalSubtotal + finalShipping + finalTax).toFixed(2));
 
   return (
@@ -109,12 +110,12 @@ export const CartPage = () => {
                       {item.name}
                     </Link>
                     <span className="font-extrabold text-base text-slate-900 dark:text-white sm:hidden">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {formatINR(item.price * item.quantity)}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">SKU: {item.sku || 'KV-ITEM'}</p>
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1">
-                    ${item.price.toFixed(2)} each
+                    {formatINR(item.price)} each
                   </p>
                 </div>
 
@@ -140,7 +141,7 @@ export const CartPage = () => {
                   </div>
 
                   <span className="hidden sm:inline font-extrabold text-base text-slate-900 dark:text-white min-w-[80px] text-right">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {formatINR(item.price * item.quantity)}
                   </span>
 
                   <button
@@ -166,7 +167,7 @@ export const CartPage = () => {
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900 dark:text-white">
-                    ${cart.subtotal.toFixed(2)}
+                    {formatINR(cart.subtotal)}
                   </span>
                 </div>
 
@@ -176,24 +177,24 @@ export const CartPage = () => {
                       <Tag className="w-3.5 h-3.5" />
                       Promo ({appliedPromo})
                     </span>
-                    <span>-${promoDiscount.toFixed(2)}</span>
+                    <span>-{formatINR(promoDiscount)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-slate-500">
                   <span>Estimated Shipping</span>
-                  <span>{finalShipping === 0 ? 'Complimentary' : `$${finalShipping.toFixed(2)}`}</span>
+                  <span>{finalShipping === 0 ? 'Complimentary' : formatINR(finalShipping)}</span>
                 </div>
 
                 <div className="flex justify-between text-slate-500">
-                  <span>Estimated Tax (8%)</span>
-                  <span>${finalTax.toFixed(2)}</span>
+                  <span>Estimated GST (18%)</span>
+                  <span>{formatINR(finalTax)}</span>
                 </div>
 
                 <div className="flex justify-between text-base font-extrabold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-700">
                   <span>Total</span>
                   <span className="text-teal-700 dark:text-teal-400 font-extrabold">
-                    ${finalTotal.toFixed(2)}
+                    {formatINR(finalTotal)}
                   </span>
                 </div>
               </div>

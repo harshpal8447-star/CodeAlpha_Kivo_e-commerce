@@ -9,20 +9,34 @@ import {
   CreditCard,
   MapPin,
   Calendar,
+  ShieldCheck,
+  AlertCircle,
+  Building,
 } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
+import { formatINR } from '../utils/currency.js';
 
 export const OrderDetailPage = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     orderService
       .getOrderById(id)
-      .then(setOrder)
-      .catch(console.error)
+      .then((data) => {
+        if (data) {
+          setOrder(data);
+        } else {
+          setError('Order record could not be found.');
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching order:', err);
+        setError(err.message || 'Unable to retrieve order details.');
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -30,24 +44,30 @@ export const OrderDetailPage = () => {
     return (
       <div className="py-24 text-center">
         <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-xs text-slate-500">Loading order records...</p>
+        <p className="text-xs text-slate-500">Retrieving order tracking and receipt...</p>
       </div>
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Order not found</h2>
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center mx-auto">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Order Not Found</h2>
         <p className="text-xs text-slate-500">
-          We could not locate this order in your account history.
+          We could not locate an order matching reference "{id}". Please verify the order number or check your order history.
         </p>
-        <Link
-          to="/account/orders"
-          className="inline-block px-5 py-2.5 bg-teal-700 text-white rounded-xl text-xs font-semibold"
-        >
-          Return to Orders
-        </Link>
+        <div className="pt-2">
+          <Link
+            to="/account/orders"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-700 text-white rounded-xl text-xs font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Order History</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -57,8 +77,15 @@ export const OrderDetailPage = () => {
       ? JSON.parse(order.shippingAddress)
       : order.shippingAddress;
 
-  const statuses = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
-  const currentStep = statuses.indexOf(order.status);
+  const milestones = [
+    { key: 'CONFIRMED', title: 'Order Confirmed', desc: 'Payment verified and inventory locked' },
+    { key: 'PROCESSING', title: 'Processing & Packing', desc: 'Assembled and packaged at warehouse' },
+    { key: 'SHIPPED', title: 'Dispatched & In Transit', desc: 'Handed over to Express Courier (Blue Dart / Delhivery)' },
+    { key: 'DELIVERED', title: 'Delivered', desc: 'Package received by customer' },
+  ];
+
+  const milestoneKeys = milestones.map((m) => m.key);
+  const currentStep = order.status === 'CANCELLED' ? -1 : milestoneKeys.indexOf(order.status);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -70,14 +97,15 @@ export const OrderDetailPage = () => {
         ]}
       />
 
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200/80 dark:border-slate-800 gap-4">
         <div>
-          <span className="text-xs text-slate-400">Order Reference</span>
+          <span className="text-xs text-slate-400 font-medium">Order Reference</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-mono">
             {order.orderNumber}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Placed on {new Date(order.createdAt).toLocaleString()}
+            Placed on {new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
           </p>
         </div>
 
@@ -90,33 +118,68 @@ export const OrderDetailPage = () => {
         </Link>
       </div>
 
-      {/* Progress Stepper */}
-      {order.status !== 'CANCELLED' && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6">
-          <div className="grid grid-cols-4 gap-2 text-center text-xs">
-            {statuses.map((step, idx) => {
-              const isPast = idx <= currentStep;
+      {/* Live Tracking Timeline */}
+      {order.status === 'CANCELLED' ? (
+        <div className="p-5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-2xl flex items-center gap-3 text-rose-800 dark:text-rose-200 text-xs">
+          <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+          <div>
+            <strong className="block font-bold text-sm">This order was cancelled.</strong>
+            <span>Payment was not processed and inventory was restored.</span>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
+            <div className="flex items-center gap-2">
+              <Truck className="w-5 h-5 text-teal-700 dark:text-teal-400" />
+              <h2 className="font-bold text-base text-slate-900 dark:text-white">Shipment Tracking</h2>
+            </div>
+            <span className="text-xs font-bold px-3 py-1 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 rounded-full border border-teal-200 dark:border-teal-800 uppercase tracking-wider">
+              Status: {order.status}
+            </span>
+          </div>
+
+          {/* Stepper Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-2">
+            {milestones.map((m, idx) => {
+              const isCompleted = idx <= (currentStep === -1 ? 0 : currentStep);
+              const isCurrent = idx === currentStep;
+
               return (
-                <div key={step} className="space-y-2">
+                <div key={m.key} className="relative flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto text-xs font-bold transition-colors ${
-                      isPast
-                        ? 'bg-teal-700 text-white'
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-colors flex-shrink-0 ${
+                      isCompleted
+                        ? 'bg-teal-700 text-white shadow-sm'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-400'
                     }`}
                   >
-                    {idx + 1}
+                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
                   </div>
-                  <span
-                    className={`block font-semibold text-[11px] uppercase tracking-wider ${
-                      isPast ? 'text-teal-700 dark:text-teal-400' : 'text-slate-400'
-                    }`}
-                  >
-                    {step}
-                  </span>
+                  <div>
+                    <span
+                      className={`block font-bold text-xs ${
+                        isCurrent
+                          ? 'text-teal-700 dark:text-teal-400'
+                          : isCompleted
+                          ? 'text-slate-900 dark:text-white'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {m.title}
+                    </span>
+                    <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
+                      {m.desc}
+                    </span>
+                  </div>
                 </div>
               );
             })}
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-700 text-[11px] text-slate-400 flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-teal-600" />
+            <span>Estimated delivery within 2-4 business days via Express Courier.</span>
           </div>
         </div>
       )}
@@ -124,9 +187,9 @@ export const OrderDetailPage = () => {
       {/* Detailed Order Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Purchased Items */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 space-y-4">
+        <div className="lg:col-span-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 space-y-4 shadow-sm">
           <h3 className="font-bold text-sm text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-700">
-            Itemized Articles ({order.items?.length || 0})
+            Ordered Articles ({order.items?.length || 0})
           </h3>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -137,6 +200,9 @@ export const OrderDetailPage = () => {
                     src={item.productImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
                     alt={item.productName}
                     className="w-14 h-14 object-cover rounded-xl bg-slate-100 dark:bg-slate-700"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80';
+                    }}
                   />
                   <div>
                     <span className="font-bold text-slate-900 dark:text-white block">
@@ -144,49 +210,49 @@ export const OrderDetailPage = () => {
                     </span>
                     <span className="text-slate-400 text-xs">SKU: {item.productSku || 'KV-ITEM'}</span>
                     <span className="text-slate-500 block text-xs mt-0.5">
-                      ${item.unitPrice.toFixed(2)} &times; {item.quantity}
+                      {formatINR(item.unitPrice)} &times; {item.quantity}
                     </span>
                   </div>
                 </div>
 
                 <span className="font-extrabold text-base text-slate-900 dark:text-white">
-                  ${item.total.toFixed(2)}
+                  {formatINR(item.total)}
                 </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Address and Financials */}
+        {/* Financial & Address Sidebar */}
         <div className="lg:col-span-4 space-y-4">
           {/* Shipping snapshot */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 space-y-2 text-xs">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 space-y-2 text-xs shadow-sm">
             <h4 className="font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 mb-2">
               <MapPin className="w-3.5 h-3.5 text-teal-600" />
-              <span>Destination Address</span>
+              <span>Delivery Address</span>
             </h4>
             {shippingAddr && (
-              <div className="text-slate-700 dark:text-slate-300 space-y-0.5">
+              <div className="text-slate-700 dark:text-slate-300 space-y-0.5 leading-relaxed">
                 <p className="font-bold text-slate-900 dark:text-white">{shippingAddr.fullName}</p>
                 <p>{shippingAddr.street}</p>
                 <p>
                   {shippingAddr.city}, {shippingAddr.state} {shippingAddr.postalCode}
                 </p>
-                <p>{shippingAddr.country}</p>
+                <p>{shippingAddr.country || 'India'}</p>
                 {shippingAddr.phone && <p className="text-slate-400 pt-1">Tel: {shippingAddr.phone}</p>}
               </div>
             )}
           </div>
 
-          {/* Payment receipt */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 space-y-2.5 text-xs">
+          {/* Payment breakdown */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-5 space-y-2.5 text-xs shadow-sm">
             <h4 className="font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 mb-2">
               <CreditCard className="w-3.5 h-3.5 text-teal-600" />
-              <span>Payment Details</span>
+              <span>Tax Invoice & Payment</span>
             </h4>
 
             <div className="flex justify-between text-slate-500">
-              <span>Payment Method:</span>
+              <span>Payment Mode:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">{order.paymentMethod}</span>
             </div>
 
@@ -195,28 +261,28 @@ export const OrderDetailPage = () => {
               <span className="font-bold text-teal-700 dark:text-teal-400">{order.paymentStatus}</span>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-700 space-y-1">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-700 space-y-1.5">
               <div className="flex justify-between text-slate-500">
-                <span>Subtotal</span>
-                <span>${order.subtotal.toFixed(2)}</span>
+                <span>Items Subtotal</span>
+                <span>{formatINR(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>Shipping</span>
-                <span>{order.shippingFee === 0 ? 'Complimentary' : `$${order.shippingFee.toFixed(2)}`}</span>
+                <span>Shipping Fee</span>
+                <span>{order.shippingFee === 0 ? 'Complimentary' : formatINR(order.shippingFee)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>Tax</span>
-                <span>${order.tax.toFixed(2)}</span>
+                <span>Estimated GST (18%)</span>
+                <span>{formatINR(order.tax)}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-teal-700 dark:text-teal-400 font-semibold">
-                  <span>Discount</span>
-                  <span>-${order.discount.toFixed(2)}</span>
+                  <span>Promo Savings</span>
+                  <span>-{formatINR(order.discount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm font-extrabold text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-700">
-                <span>Total</span>
-                <span className="text-teal-700 dark:text-teal-400">${order.total.toFixed(2)}</span>
+                <span>Total Amount Paid</span>
+                <span className="text-teal-700 dark:text-teal-400">{formatINR(order.total)}</span>
               </div>
             </div>
           </div>

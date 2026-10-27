@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, Filter, Eye, ChevronRight } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { useCart } from '../../context/CartContext.jsx';
+import { formatINR } from '../../utils/currency.js';
 
 export const AdminOrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -135,7 +136,7 @@ export const AdminOrdersPage = () => {
                     {order.items?.length || 0} items
                   </td>
                   <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                    ${order.total.toFixed(2)}
+                    {formatINR(order.total)}
                   </td>
                   <td className="py-3.5 px-4">
                     <select
@@ -210,7 +211,7 @@ export const AdminOrdersPage = () => {
                       <span>
                         {item.productName} &times; {item.quantity}
                       </span>
-                      <span className="font-bold">${item.total.toFixed(2)}</span>
+                      <span className="font-bold">{formatINR(item.total)}</span>
                     </div>
                   ))}
                 </div>
@@ -218,7 +219,7 @@ export const AdminOrdersPage = () => {
 
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between font-extrabold text-sm text-slate-900 dark:text-white">
                 <span>Total Value:</span>
-                <span className="text-teal-700 dark:text-teal-400">${selectedOrder.total.toFixed(2)}</span>
+                <span className="text-teal-700 dark:text-teal-400">{formatINR(selectedOrder.total)}</span>
               </div>
             </div>
           </div>

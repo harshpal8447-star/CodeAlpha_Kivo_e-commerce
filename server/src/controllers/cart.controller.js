@@ -37,9 +37,9 @@ const formatCartResponse = (cart) => {
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = parseFloat(items.reduce((sum, item) => sum + item.lineTotal, 0).toFixed(2));
-  // Free shipping over $50, else $5.99
-  const shipping = subtotal === 0 || subtotal >= 50 ? 0 : 5.99;
-  const tax = parseFloat((subtotal * 0.08).toFixed(2)); // standard 8% estimated tax
+  // Free shipping across India over ₹999, else ₹99
+  const shipping = subtotal === 0 || subtotal >= 999 ? 0 : 99;
+  const tax = parseFloat((subtotal * 0.18).toFixed(2)); // 18% GST
   const total = parseFloat((subtotal + shipping + tax).toFixed(2));
 
   return {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingBag, Eye } from 'lucide-react';
 import { useCart } from '../../context/CartContext.jsx';
+import { formatINR } from '../../utils/currency.js';
 
 export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -36,7 +37,7 @@ export const ProductCard = ({ product }) => {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {hasDiscount && (
             <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-              Save ${(product.compareAtPrice - product.price).toFixed(0)}
+              Save {formatINR(product.compareAtPrice - product.price)}
             </span>
           )}
           {product.isFeatured && (
@@ -103,11 +104,11 @@ export const ProductCard = ({ product }) => {
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white">
-                ${product.price.toFixed(2)}
+                {formatINR(product.price)}
               </span>
               {hasDiscount && (
                 <span className="text-xs text-slate-400 line-through">
-                  ${product.compareAtPrice.toFixed(2)}
+                  {formatINR(product.compareAtPrice)}
                 </span>
               )}
             </div>

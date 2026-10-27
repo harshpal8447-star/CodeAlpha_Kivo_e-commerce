@@ -80,7 +80,7 @@ export const HomePage = () => {
               <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center gap-6 text-xs text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-teal-600" />
-                  <span>Free shipping over $50</span>
+                  <span>Free shipping across India over ₹999</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-teal-600" />
@@ -114,8 +114,8 @@ export const HomePage = () => {
                         <p className="text-xs text-slate-500 mt-0.5">Custom beryllium drivers &bull; 42hr battery</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-extrabold text-lg text-slate-900 dark:text-white">$289.00</span>
-                        <span className="block text-[11px] text-slate-400 line-through">$349.00</span>
+                        <span className="font-extrabold text-lg text-slate-900 dark:text-white">₹24,999</span>
+                        <span className="block text-[11px] text-slate-400 line-through">₹29,999</span>
                       </div>
                     </div>
                   </div>

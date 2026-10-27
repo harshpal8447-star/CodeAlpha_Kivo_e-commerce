@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
+import { formatINR } from '../../utils/currency.js';
 
 export const AdminDashboardPage = () => {
   const [data, setData] = useState(null);
@@ -41,7 +42,7 @@ export const AdminDashboardPage = () => {
   const statCards = [
     {
       label: 'Total Revenue',
-      value: `$${metrics.totalRevenue.toLocaleString()}`,
+      value: formatINR(metrics.totalRevenue),
       sub: 'Verified gross sales',
       icon: DollarSign,
       color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/60 dark:text-teal-400',
@@ -186,7 +187,7 @@ export const AdminDashboardPage = () => {
                     </span>
                   </td>
                   <td className="py-3 font-bold text-slate-900 dark:text-white">
-                    ${ord.total.toFixed(2)}
+                    {formatINR(ord.total)}
                   </td>
                   <td className="py-3 text-slate-400">
                     {new Date(ord.createdAt).toLocaleDateString()}
