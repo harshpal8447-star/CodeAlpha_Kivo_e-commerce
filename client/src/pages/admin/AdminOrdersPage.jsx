@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, Filter, Eye, ChevronRight, FileSpreadsheet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingCart, Search, Filter, Eye, ChevronRight, FileSpreadsheet, ArrowLeft } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatINR } from '../../utils/currency.js';
@@ -13,15 +14,18 @@ export const AdminOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const { showToast } = useCart();
+  const navigate = useNavigate();
 
   const loadOrders = async () => {
     try {
       setLoading(true);
       const res = await adminService.getOrders({
-        status: statusFilter,
-        search,
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+        search: search.trim() ? search.trim() : undefined,
+        limit: 100,
       });
-      setOrders(res.data?.orders || []);
+      const orderList = res?.orders || res?.data?.orders || (Array.isArray(res) ? res : []);
+      setOrders(orderList);
     } catch (err) {
       showToast(err.message || 'Failed to fetch customer orders.', 'error');
     } finally {
@@ -105,11 +109,24 @@ export const AdminOrdersPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Customer Orders & Fulfillment
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/admin')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-teal-600 transition-colors shadow-2xs group"
+              title="Return to Admin Overview"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back to Overview</span>
+            </button>
+          </div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <span>Customer Orders & Fulfillment</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 font-semibold">
+              {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
+            </span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500">
             Process shipments, track payment states, and update fulfillment milestones.
           </p>
         </div>
@@ -171,7 +188,25 @@ export const AdminOrdersPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {orders.map((order) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-slate-400">
+                    <div className="w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Loading customer orders...</p>
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-slate-400">
+                    <ShoppingCart className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">No customer orders found</p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      {statusFilter !== 'ALL' || search ? 'Try resetting filters or search terms.' : 'Placed orders will appear here automatically.'}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => (
                 <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="py-3.5 px-4 font-mono font-bold text-teal-700 dark:text-teal-400">
                     {order.orderNumber}
@@ -217,7 +252,7 @@ export const AdminOrdersPage = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

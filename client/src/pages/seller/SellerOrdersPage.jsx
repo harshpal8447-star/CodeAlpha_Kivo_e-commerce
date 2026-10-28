@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
   Zap,
@@ -13,6 +14,7 @@ import {
   PackageCheck,
   Bike,
   FileSpreadsheet,
+  ArrowLeft,
 } from 'lucide-react';
 import { sellerService } from '../../services/seller.service.js';
 import { formatRupee } from '../../utils/currency.js';
@@ -25,13 +27,17 @@ export const SellerOrdersPage = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [updatingItemId, setUpdatingItemId] = useState(null);
 
+  const navigate = useNavigate();
+
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const res = await sellerService.getOrders({
         status: statusFilter === 'ALL' ? undefined : statusFilter,
+        limit: 100,
       });
-      setOrders(res?.orders || []);
+      const orderList = res?.orders || res?.data?.orders || (Array.isArray(res) ? res : []);
+      setOrders(orderList);
     } catch (err) {
       console.error('Failed to load seller orders:', err);
     } finally {
@@ -105,14 +111,24 @@ export const SellerOrdersPage = () => {
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/seller')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-teal-600 transition-colors shadow-2xs group"
+              title="Return to Seller Overview"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back to Overview</span>
+            </button>
+          </div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <span>Customer Orders Received</span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 font-semibold">
-              {orders.length} Active Orders
+              {orders.length} Active {orders.length === 1 ? 'Order' : 'Orders'}
             </span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500">
             Track buyer purchases for your merchandise, prepare shipments, and update dispatch milestones in real-time.
           </p>
         </div>

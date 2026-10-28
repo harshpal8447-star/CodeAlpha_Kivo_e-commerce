@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
+import { Outlet, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -10,6 +10,7 @@ import {
   ExternalLink,
   ShieldCheck,
   CheckCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import Toast from '../components/common/Toast.jsx';
@@ -19,6 +20,7 @@ export const SellerLayout = () => {
   const { user, loading, logout } = useAuth();
   const { toast } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -130,7 +132,21 @@ export const SellerLayout = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 sm:px-8 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-3 text-xs">
+            <button
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate('/seller');
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-colors shadow-2xs group"
+              title="Go back to previous page"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Back</span>
+            </button>
             <span className="font-bold text-slate-800 dark:text-slate-100">
               {user.storeName || user.companyName || 'Seller Partner Console'}
             </span>

@@ -404,22 +404,26 @@ export const deleteSellerProduct = async (req, res, next) => {
 // 8. Get Orders Received by Seller
 export const getSellerOrders = async (req, res, next) => {
   try {
-    const sellerId = req.user.id;
-    const { status, page = 1, limit = 20 } = req.query;
+    const isAdmin = req.user.role === 'ADMIN';
+    const targetSellerId = isAdmin && req.query.sellerId ? req.query.sellerId : req.user.id;
+    const { status, page = 1, limit = 100 } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10)));
     const skip = (pageNum - 1) * limitNum;
 
-    // Find orders where at least one item belongs to this seller
-    const where = {
-      items: {
-        some: {
-          sellerId,
-          ...(status && status !== 'ALL' && { status }),
-        },
-      },
-    };
+    const cleanStatus = status && status !== 'ALL' && status !== 'undefined' ? status : null;
+
+    const itemFilter = {};
+    if (!isAdmin || req.query.sellerId) {
+      itemFilter.sellerId = targetSellerId;
+    }
+    if (cleanStatus) {
+      itemFilter.status = cleanStatus;
+    }
+
+    // Find orders where at least one item belongs to this seller (or all for admin viewing)
+    const where = Object.keys(itemFilter).length > 0 ? { items: { some: itemFilter } } : {};
 
     const [total, orders] = await Promise.all([
       prisma.order.count({ where }),
@@ -429,9 +433,9 @@ export const getSellerOrders = async (req, res, next) => {
         skip,
         take: limitNum,
         include: {
-          items: {
-            where: { sellerId },
-          },
+          items: (!isAdmin || req.query.sellerId)
+            ? { where: { sellerId: targetSellerId } }
+            : true,
         },
       }),
     ]);
@@ -450,8 +454,8 @@ export const getSellerOrders = async (req, res, next) => {
       riderPhone: ord.riderPhone,
       orderStatus: ord.status,
       createdAt: ord.createdAt,
-      items: ord.items,
-      sellerSubtotal: ord.items.reduce((sum, item) => sum + item.total, 0),
+      items: ord.items || [],
+      sellerSubtotal: (ord.items || []).reduce((sum, item) => sum + (item.total || 0), 0),
     }));
 
     res.status(200).json({

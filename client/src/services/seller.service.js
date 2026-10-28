@@ -37,9 +37,15 @@ export const sellerService = {
   },
 
   getOrders: async (params = {}) => {
-    const query = new URLSearchParams(params).toString();
+    const cleanParams = {};
+    Object.keys(params).forEach((k) => {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '' && params[k] !== 'undefined') {
+        cleanParams[k] = params[k];
+      }
+    });
+    const query = new URLSearchParams(cleanParams).toString();
     const res = await api.get(`/seller/orders?${query}`);
-    return res.data;
+    return res.data || res;
   },
 
   updateOrderItemStatus: async (itemId, status) => {

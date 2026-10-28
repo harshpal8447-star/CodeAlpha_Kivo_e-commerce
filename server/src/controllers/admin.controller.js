@@ -230,18 +230,18 @@ export const deleteAdminProduct = async (req, res, next) => {
 
 export const getAdminOrders = async (req, res, next) => {
   try {
-    const { status, search, page = 1, limit = 20 } = req.query;
+    const { status, search, page = 1, limit = 100 } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     const where = {};
-    if (status && status !== 'ALL') {
+    if (status && status !== 'ALL' && status !== 'undefined') {
       where.status = status;
     }
 
-    if (search && search.trim()) {
+    if (search && search.trim() && search.trim() !== 'undefined') {
       const q = search.trim();
       where.OR = [
         { orderNumber: { contains: q } },
