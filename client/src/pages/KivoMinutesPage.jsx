@@ -246,10 +246,17 @@ export const KivoMinutesPage = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {filteredProducts.map((product) => {
               const qtyInCart = getItemQuantity(product.id);
-              const primaryImage = Array.isArray(product.images)
+              const primaryImage = Array.isArray(product?.images)
                 ? product.images[0]
-                : typeof product.images === 'string'
-                ? JSON.parse(product.images)[0]
+                : typeof product?.images === 'string'
+                ? (() => {
+                    try {
+                      const parsed = JSON.parse(product.images);
+                      return Array.isArray(parsed) ? parsed[0] : product.images;
+                    } catch {
+                      return product.images;
+                    }
+                  })()
                 : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80';
 
               const activePrice = product.minutesPrice || product.price;

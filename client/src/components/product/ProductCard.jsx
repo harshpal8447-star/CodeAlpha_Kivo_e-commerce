@@ -7,10 +7,17 @@ import { formatINR } from '../../utils/currency.js';
 export const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
-  const images = Array.isArray(product.images)
+  const images = Array.isArray(product?.images)
     ? product.images
-    : typeof product.images === 'string'
-    ? JSON.parse(product.images || '[]')
+    : typeof product?.images === 'string'
+    ? (() => {
+        try {
+          const parsed = JSON.parse(product.images);
+          return Array.isArray(parsed) ? parsed : [product.images];
+        } catch {
+          return [product.images];
+        }
+      })()
     : [];
 
   const mainImage = images[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';

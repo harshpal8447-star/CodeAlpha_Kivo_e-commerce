@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
+import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 
 // Layouts
 import RootLayout from './layouts/RootLayout.jsx';
@@ -56,87 +57,89 @@ const ProtectedRoute = ({ children }) => {
 
 export const App = () => {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <CartProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Customer Facing Storefront Layout */}
-              <Route path="/" element={<RootLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="products" element={<ProductsPage />} />
-                <Route path="products/:identifier" element={<ProductDetailPage />} />
-                <Route path="minutes" element={<KivoMinutesPage />} />
-                <Route path="cart" element={<CartPage />} />
-                <Route
-                  path="checkout"
-                  element={
-                    <ProtectedRoute>
-                      <CheckoutPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="order-success/:orderId"
-                  element={
-                    <ProtectedRoute>
-                      <OrderSuccessPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
-                <Route path="forgot-password" element={<ForgotPasswordPage />} />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <Routes>
+                {/* Customer Facing Storefront Layout */}
+                <Route path="/" element={<RootLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="products" element={<ProductsPage />} />
+                  <Route path="products/:identifier" element={<ProductDetailPage />} />
+                  <Route path="minutes" element={<KivoMinutesPage />} />
+                  <Route path="cart" element={<CartPage />} />
+                  <Route
+                    path="checkout"
+                    element={
+                      <ProtectedRoute>
+                        <CheckoutPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="order-success/:orderId"
+                    element={
+                      <ProtectedRoute>
+                        <OrderSuccessPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="login" element={<LoginPage />} />
+                  <Route path="register" element={<RegisterPage />} />
+                  <Route path="forgot-password" element={<ForgotPasswordPage />} />
 
-                {/* Protected Customer Account Routes */}
-                <Route
-                  path="account"
-                  element={
-                    <ProtectedRoute>
-                      <AccountPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="account/orders"
-                  element={
-                    <ProtectedRoute>
-                      <OrderHistoryPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="account/orders/:id"
-                  element={
-                    <ProtectedRoute>
-                      <OrderDetailPage />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Protected Customer Account Routes */}
+                  <Route
+                    path="account"
+                    element={
+                      <ProtectedRoute>
+                        <AccountPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="account/orders"
+                    element={
+                      <ProtectedRoute>
+                        <OrderHistoryPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="account/orders/:id"
+                    element={
+                      <ProtectedRoute>
+                        <OrderDetailPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
 
-              {/* Protected Administrator Dashboard Layout */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboardPage />} />
-                <Route path="products" element={<AdminProductsPage />} />
-                <Route path="orders" element={<AdminOrdersPage />} />
-                <Route path="categories" element={<AdminCategoriesPage />} />
-                <Route path="sellers" element={<AdminSellersPage />} />
-              </Route>
+                {/* Protected Administrator Dashboard Layout */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="products" element={<AdminProductsPage />} />
+                  <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="categories" element={<AdminCategoriesPage />} />
+                  <Route path="sellers" element={<AdminSellersPage />} />
+                </Route>
 
-              {/* Protected Multi-Vendor Seller Portal Layout */}
-              <Route path="/seller" element={<SellerLayout />}>
-                <Route index element={<SellerDashboardPage />} />
-                <Route path="products" element={<SellerProductsPage />} />
-                <Route path="orders" element={<SellerOrdersPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </CartProvider>
-      </AuthProvider>
-    </ThemeProvider>
+                {/* Protected Multi-Vendor Seller Portal Layout */}
+                <Route path="/seller" element={<SellerLayout />}>
+                  <Route index element={<SellerDashboardPage />} />
+                  <Route path="products" element={<SellerProductsPage />} />
+                  <Route path="orders" element={<SellerOrdersPage />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

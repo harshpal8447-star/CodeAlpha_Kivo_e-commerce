@@ -57,26 +57,174 @@ export const ProductDetailPage = () => {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    let isMounted = true;
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const data = await productService.getProduct(identifier);
-        setProduct(data.product);
-        setRelated(data.related || []);
-        if (data.product.images && data.product.images.length > 0) {
-          setSelectedImage(data.product.images[0]);
+        const res = await productService.getProduct(identifier);
+        const prod = res?.product || res?.data?.product || res;
+        const rel = res?.related || res?.data?.related || [];
+
+        if (!isMounted) return;
+
+        setProduct(prod || null);
+        setRelated(rel);
+
+        // Normalize images
+        const imgs = Array.isArray(prod?.images)
+          ? prod.images
+          : typeof prod?.images === 'string'
+          ? (() => {
+              try {
+                const parsed = JSON.parse(prod.images);
+                return Array.isArray(parsed) ? parsed : [prod.images];
+              } catch {
+                return [prod.images];
+              }
+            })()
+          : [];
+
+        if (imgs.length > 0) {
+          setSelectedImage(imgs[0]);
         }
         setQuantity(1);
       } catch (err) {
         console.error('Failed to load product details:', err);
+        if (isMounted) setProduct(null);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchProduct();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    return () => {
+      isMounted = false;
+    };
   }, [identifier]);
+
+  // Derived image array from product safely before any returns
+  const productImages = useMemo(() => {
+    if (!product?.images) return [];
+    if (Array.isArray(product.images)) return product.images;
+    if (typeof product.images === 'string') {
+      try {
+        const parsed = JSON.parse(product.images);
+        return Array.isArray(parsed) ? parsed : [product.images];
+      } catch {
+        return [product.images];
+      }
+    }
+    return [];
+  }, [product?.images]);
+
+  const reviewsList = useMemo(() => product?.reviews || [], [product?.reviews]);
+  const totalReviewsCount = reviewsList.length;
+
+  const starCounts = useMemo(() => {
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewsList.forEach((r) => {
+      const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
+      counts[star] = (counts[star] || 0) + 1;
+    });
+    return counts;
+  }, [reviewsList]);
+
+  const starPercentages = useMemo(() => {
+    if (totalReviewsCount === 0) return { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    return {
+      5: Math.round((starCounts[5] / totalReviewsCount) * 100),
+      4: Math.round((starCounts[4] / totalReviewsCount) * 100),
+      3: Math.round((starCounts[3] / totalReviewsCount) * 100),
+      2: Math.round((starCounts[2] / totalReviewsCount) * 100),
+      1: Math.round((starCounts[1] / totalReviewsCount) * 100),
+    };
+  }, [starCounts, totalReviewsCount]);
+
+  const avgCalculatedRating = useMemo(() => {
+    if (totalReviewsCount === 0) {
+      return product?.rating !== undefined && product?.rating !== null ? Number(product.rating).toFixed(1) : '4.8';
+    }
+    const sum = reviewsList.reduce((acc, r) => acc + (r.rating || 0), 0);
+    return (sum / totalReviewsCount).toFixed(1);
+  }, [reviewsList, product?.rating, totalReviewsCount]);
+
+  const filteredReviews = useMemo(() => {
+    let list = [...reviewsList];
+    if (starFilter !== null) {
+      list = list.filter((r) => Math.round(r.rating) === starFilter);
+    }
+    if (verifiedOnly) {
+      list = list.filter((r) => r.verifiedPurchase);
+    }
+    if (sortBy === 'highest') {
+      list.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === 'lowest') {
+      list.sort((a, b) => a.rating - b.rating);
+    } else if (sortBy === 'helpful') {
+      list.sort((a, b) => (helpfulVotes[b.id] || 0) - (helpfulVotes[a.id] || 0));
+    } else {
+      // Default: recent
+      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    return list;
+  }, [reviewsList, starFilter, verifiedOnly, sortBy, helpfulVotes]);
+
+  const ratingLabels = {
+    1: '1 star - Poor quality',
+    2: '2 stars - Below average',
+    3: '3 stars - Average, as expected',
+    4: '4 stars - Good, satisfied',
+    5: '5 stars - Excellent, highly recommended!',
+  };
+
+  const handleHelpfulClick = (reviewId) => {
+    if (votedReviews.has(reviewId)) return;
+    setHelpfulVotes((prev) => ({
+      ...prev,
+      [reviewId]: (prev[reviewId] || 0) + 1,
+    }));
+    setVotedReviews((prev) => new Set(prev).add(reviewId));
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    addToCart(product, quantity);
+    navigate('/checkout');
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      setReviewSubmitting(true);
+      const newReview = await productService.submitReview(product.id, {
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment,
+      });
+
+      setProduct((prev) => ({
+        ...prev,
+        reviews: [newReview, ...(prev?.reviews || [])],
+        reviewCount: (prev?.reviewCount || 0) + 1,
+      }));
+
+      setReviewSuccess(true);
+      setReviewComment('');
+      setReviewTitle('');
+      setShowReviewForm(false);
+    } catch (err) {
+      alert(err.message || 'Failed to submit review.');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -112,117 +260,15 @@ export const ProductDetailPage = () => {
     );
   }
 
-  const ratingLabels = {
-    1: '1 star - Poor quality',
-    2: '2 stars - Below average',
-    3: '3 stars - Average, as expected',
-    4: '4 stars - Good, satisfied',
-    5: '5 stars - Excellent, highly recommended!',
-  };
+  const isOutOfStock = (product.stock ?? 0) <= 0;
+  const isLowStock = (product.stock ?? 0) > 0 && product.stock <= 5;
+  const hasDiscount = Boolean(product.compareAtPrice && product.compareAtPrice > product.price);
 
-  const handleHelpfulClick = (reviewId) => {
-    if (votedReviews.has(reviewId)) return;
-    setHelpfulVotes((prev) => ({
-      ...prev,
-      [reviewId]: (prev[reviewId] || 0) + 1,
-    }));
-    setVotedReviews((prev) => new Set(prev).add(reviewId));
-  };
-
-  const reviewsList = product?.reviews || [];
-  const totalReviewsCount = reviewsList.length;
-
-  const starCounts = useMemo(() => {
-    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviewsList.forEach((r) => {
-      const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
-      counts[star] = (counts[star] || 0) + 1;
-    });
-    return counts;
-  }, [reviewsList]);
-
-  const starPercentages = useMemo(() => {
-    if (totalReviewsCount === 0) return { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    return {
-      5: Math.round((starCounts[5] / totalReviewsCount) * 100),
-      4: Math.round((starCounts[4] / totalReviewsCount) * 100),
-      3: Math.round((starCounts[3] / totalReviewsCount) * 100),
-      2: Math.round((starCounts[2] / totalReviewsCount) * 100),
-      1: Math.round((starCounts[1] / totalReviewsCount) * 100),
-    };
-  }, [starCounts, totalReviewsCount]);
-
-  const avgCalculatedRating = useMemo(() => {
-    if (totalReviewsCount === 0) return product?.rating || 4.8;
-    const sum = reviewsList.reduce((acc, r) => acc + (r.rating || 0), 0);
-    return (sum / totalReviewsCount).toFixed(1);
-  }, [reviewsList, product?.rating, totalReviewsCount]);
-
-  const filteredReviews = useMemo(() => {
-    let list = [...reviewsList];
-    if (starFilter !== null) {
-      list = list.filter((r) => Math.round(r.rating) === starFilter);
-    }
-    if (verifiedOnly) {
-      list = list.filter((r) => r.verifiedPurchase);
-    }
-    if (sortBy === 'highest') {
-      list.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'lowest') {
-      list.sort((a, b) => a.rating - b.rating);
-    } else if (sortBy === 'helpful') {
-      list.sort((a, b) => (helpfulVotes[b.id] || 0) - (helpfulVotes[a.id] || 0));
-    } else {
-      // Default: recent
-      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    return list;
-  }, [reviewsList, starFilter, verifiedOnly, sortBy, helpfulVotes]);
-
-  const isOutOfStock = product.stock <= 0;
-  const isLowStock = product.stock > 0 && product.stock <= 5;
-  const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
-
-  const handleBuyNow = () => {
-    addToCart(product, quantity);
-    navigate('/checkout');
-  };
-
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      setReviewSubmitting(true);
-      const newReview = await productService.submitReview(product.id, {
-        rating: reviewRating,
-        title: reviewTitle,
-        comment: reviewComment,
-      });
-
-      setProduct((prev) => ({
-        ...prev,
-        reviews: [newReview, ...(prev.reviews || [])],
-        reviewCount: (prev.reviewCount || 0) + 1,
-      }));
-
-      setReviewSuccess(true);
-      setReviewComment('');
-      setReviewTitle('');
-      setShowReviewForm(false);
-    } catch (err) {
-      alert(err.message || 'Failed to submit review.');
-    } finally {
-      setReviewSubmitting(false);
-    }
-  };
+  const displayImage = selectedImage || (productImages.length > 0 ? productImages[0] : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80');
 
   const breadcrumbs = [
     { label: 'Shop', path: '/products' },
-    { label: product.category?.name || 'Category', path: `/products?category=${product.category?.slug}` },
+    { label: product.category?.name || 'Category', path: `/products?category=${product.category?.slug || ''}` },
     { label: product.name },
   ];
 
@@ -236,7 +282,7 @@ export const ProductDetailPage = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="aspect-square w-full rounded-3xl overflow-hidden bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm relative">
             <img
-              src={selectedImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'}
+              src={displayImage}
               alt={product.name}
               className="w-full h-full object-cover object-center"
               onError={(e) => {
@@ -251,14 +297,14 @@ export const ProductDetailPage = () => {
           </div>
 
           {/* Thumbnails */}
-          {product.images && product.images.length > 1 && (
+          {productImages && productImages.length > 1 && (
             <div className="flex items-center gap-3 overflow-x-auto pb-2">
-              {product.images.map((img, idx) => (
+              {productImages.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   className={`w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all ${
-                    selectedImage === img
+                    (selectedImage === img || (!selectedImage && idx === 0))
                       ? 'border-teal-600 scale-95 shadow-sm'
                       : 'border-transparent opacity-70 hover:opacity-100'
                   }`}

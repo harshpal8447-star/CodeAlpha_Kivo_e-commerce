@@ -28,9 +28,10 @@ export const CartProvider = ({ children }) => {
   };
 
   const calculateGuestCart = (items) => {
-    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    const safeItems = Array.isArray(items) ? items : [];
+    const itemCount = safeItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
     const subtotal = parseFloat(
-      items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
+      safeItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0), 0).toFixed(2)
     );
     // Standard normal delivery is ₹40, complimentary over ₹499 (Amazon / Flipkart pattern)
     const shipping = subtotal === 0 || subtotal >= 499 ? 0 : 40.00;
@@ -38,7 +39,7 @@ export const CartProvider = ({ children }) => {
     const total = parseFloat((subtotal + shipping + tax).toFixed(2));
 
     return {
-      items,
+      items: safeItems,
       itemCount,
       subtotal,
       shipping,
@@ -110,11 +111,18 @@ export const CartProvider = ({ children }) => {
         );
         let newItems = [...cart.items];
 
-        const primaryImage = Array.isArray(product.images)
+        const primaryImage = Array.isArray(product?.images)
           ? product.images[0]
-          : typeof product.images === 'string'
-          ? JSON.parse(product.images)[0]
-          : product.image;
+          : typeof product?.images === 'string'
+          ? (() => {
+              try {
+                const parsed = JSON.parse(product.images);
+                return Array.isArray(parsed) ? parsed[0] : product.images;
+              } catch {
+                return product.images;
+              }
+            })()
+          : product?.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
 
         if (existingIndex > -1) {
           const newQty = Math.min(
