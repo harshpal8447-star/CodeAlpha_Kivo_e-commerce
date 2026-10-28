@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
+import OpeningSplashAnimation from './components/common/OpeningSplashAnimation.jsx';
 
 // Layouts
 import RootLayout from './layouts/RootLayout.jsx';
@@ -58,6 +59,7 @@ const ProtectedRoute = ({ children }) => {
 export const App = () => {
   return (
     <ErrorBoundary>
+      <OpeningSplashAnimation />
       <ThemeProvider>
         <AuthProvider>
           <CartProvider>
