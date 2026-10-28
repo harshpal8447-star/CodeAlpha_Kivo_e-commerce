@@ -99,6 +99,12 @@ export const ProductCard = ({ product }) => {
             {product.name}
           </Link>
 
+          {product.seller?.storeName && (
+            <span className="block text-[10px] text-slate-400 mt-0.5">
+              by <strong className="font-semibold text-slate-600 dark:text-slate-300">{product.seller.storeName}</strong>
+            </span>
+          )}
+
           {/* Description snippet */}
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
             {product.description}

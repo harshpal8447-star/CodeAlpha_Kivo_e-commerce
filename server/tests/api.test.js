@@ -222,4 +222,63 @@ describe('Kivo E-Commerce API Suite', () => {
       expect(res.body.data.order.status).toBe('CANCELLED');
     });
   });
+
+  describe('6. Multi-Vendor Marketplace & Seller Portal API', () => {
+    let sellerToken;
+
+    it('should authenticate a verified seller account', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'seller@kivo.com',
+          password: 'SellerPassword123!',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.user.role).toBe('SELLER');
+      expect(res.body.data.user.companyName).toBe('Apex Retail & Hyperlocal Tech Pvt Ltd');
+      sellerToken = res.body.data.token;
+    });
+
+    it('should fetch seller store metrics and pending order items', async () => {
+      const res = await request(app)
+        .get('/api/seller/metrics')
+        .set('Authorization', `Bearer ${sellerToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.metrics.totalProducts).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.metrics.totalRevenue).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should list products owned by the seller', async () => {
+      const res = await request(app)
+        .get('/api/seller/products')
+        .set('Authorization', `Bearer ${sellerToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.products.length).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.products[0].sellerId).toBeDefined();
+    });
+
+    it('should retrieve orders containing items placed for the seller', async () => {
+      const res = await request(app)
+        .get('/api/seller/orders')
+        .set('Authorization', `Bearer ${sellerToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.orders.length).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.orders[0].items.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should allow admin to list all marketplace sellers and company profiles', async () => {
+      const res = await request(app)
+        .get('/api/admin/sellers')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.sellers.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.data.sellers.some((s) => s.email === 'seller@kivo.com')).toBe(true);
+    });
+  });
 });

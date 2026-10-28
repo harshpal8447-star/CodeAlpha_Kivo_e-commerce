@@ -15,6 +15,7 @@ import categoryRoutes from './routes/category.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import sellerRoutes from './routes/seller.routes.js';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/seller', sellerRoutes);
 
 // 404 & Centralized Error Handlers
 app.use(notFoundHandler);

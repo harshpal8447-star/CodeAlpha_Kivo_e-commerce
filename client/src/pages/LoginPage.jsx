@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck, User } from 'lucide-react';
+import { ShoppingBag, Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck, User, Store, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export const LoginPage = () => {
@@ -22,7 +22,17 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      const authUser = await login({ email, password });
+      if (from === '/') {
+        if (authUser?.role === 'SELLER') {
+          navigate('/seller', { replace: true });
+          return;
+        }
+        if (authUser?.role === 'ADMIN') {
+          navigate('/admin', { replace: true });
+          return;
+        }
+      }
       navigate(from, { replace: true });
     } catch (err) {
       setErrorMessage(err.message || 'Invalid email or password.');
@@ -135,26 +145,51 @@ export const LoginPage = () => {
 
           {/* Quick Demo Login Pre-fills */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">
-              Quick 1-Click Demo Evaluation
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                1-Click Demo Evaluation
+              </span>
+              <span className="text-[10px] text-teal-600 dark:text-teal-400 font-medium">Instant Pre-fill</span>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => fillDemoCredentials('sarah.mitchell@example.com', 'Customer123!')}
-                className="flex items-center justify-center gap-1.5 p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-[11px] font-semibold transition-colors"
+                className="flex items-center justify-start gap-1.5 p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-[11px] font-semibold transition-colors"
+                title="Customer (Sarah Mitchell)"
               >
-                <User className="w-3.5 h-3.5" />
-                <span>Demo Customer</span>
+                <User className="w-3.5 h-3.5 text-slate-500" />
+                <span className="truncate">🛍️ Sarah (Buyer)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('seller@kivo.com', 'SellerPassword123!')}
+                className="flex items-center justify-start gap-1.5 p-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-xl text-[11px] font-semibold transition-colors"
+                title="Seller 1: Apex Retail & Tech Pvt Ltd"
+              >
+                <Store className="w-3.5 h-3.5 text-amber-600" />
+                <span className="truncate">🏪 Apex Tech (Seller)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('artisan@kivo.com', 'SellerPassword123!')}
+                className="flex items-center justify-start gap-1.5 p-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl text-[11px] font-semibold transition-colors"
+                title="Seller 2: Aura Living & Artisanal Studio"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="truncate">🎨 Aura Living (Seller)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillDemoCredentials('admin@kivo.com', 'AdminPassword123!')}
-                className="flex items-center justify-center gap-1.5 p-2 bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/60 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-xl text-[11px] font-semibold transition-colors"
+                className="flex items-center justify-start gap-1.5 p-2 bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/60 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-xl text-[11px] font-semibold transition-colors"
+                title="Super Admin"
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Administrator</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                <span className="truncate">👑 Super Admin</span>
               </button>
             </div>
           </div>

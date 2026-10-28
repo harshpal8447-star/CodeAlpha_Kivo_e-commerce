@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Zap,
   MapPin,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
@@ -60,15 +61,15 @@ export const Navbar = () => {
       {/* Top promotional & Kivo Minutes announcement bar */}
       <div className="bg-slate-950 text-slate-200 text-xs py-1.5 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 sm:gap-3">
         <Link
-          to="/products?minutes=true"
+          to="/minutes"
           className="inline-flex items-center gap-1 text-amber-300 font-extrabold bg-amber-950/80 hover:bg-amber-900/80 px-2 py-0.5 rounded-full border border-amber-500/50 text-[10px] sm:text-[11px] transition-colors"
         >
           <Zap className="w-3 h-3 fill-amber-400 text-amber-400 animate-pulse" />
-          <span>KIVO MINUTES LIVE</span>
+          <span>⚡ KIVO MINUTES STOREFRONT</span>
           <span className="bg-amber-400 text-slate-950 px-1 rounded font-black text-[9px] ml-0.5">10-15 MIN</span>
         </Link>
-        <span className="hidden sm:inline">&bull; Ultra-fast dark store dispatch across Mumbai &bull; Complimentary on orders over ₹999</span>
-        <span className="sm:hidden">&bull; Free delivery over ₹999</span>
+        <span className="hidden sm:inline">&bull; Ultra-fast dark store dispatch across Mumbai &bull; Complimentary on orders over ₹499</span>
+        <span className="sm:hidden">&bull; Free delivery over ₹499</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,7 +95,7 @@ export const Navbar = () => {
 
           {/* Kivo Minutes Nav Pill */}
           <Link
-            to="/products?minutes=true"
+            to="/minutes"
             className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-xs shadow-sm hover:shadow-md hover:scale-105 transition-all border border-amber-300 group flex-shrink-0"
             title="Instant 10-15 minute delivery on essentials"
           >
@@ -211,6 +212,17 @@ export const Navbar = () => {
                       </p>
                     </div>
 
+                    {(user?.role === 'SELLER' || user?.role === 'ADMIN') && (
+                      <Link
+                        to="/seller"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700/50 font-medium"
+                      >
+                        <Store className="w-4 h-4 text-amber-600" />
+                        <span>Seller Portal ({user?.storeName || 'Merchant'})</span>
+                      </Link>
+                    )}
+
                     {isAdmin && (
                       <Link
                         to="/admin"
@@ -296,16 +308,16 @@ export const Navbar = () => {
         <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 pt-2 pb-6 space-y-3">
           {/* Mobile Kivo Minutes Hero Banner */}
           <Link
-            to="/products?minutes=true"
+            to="/minutes"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-sm shadow-sm"
           >
             <span className="flex items-center gap-2">
               <Zap className="w-5 h-5 fill-slate-950 text-slate-950" />
-              <span>KIVO MINUTES</span>
+              <span>⚡ KIVO MINUTES (10-15 MIN)</span>
             </span>
             <span className="text-[10px] bg-slate-950 text-amber-300 font-bold px-2 py-0.5 rounded-full uppercase">
-              10–15 Mins
+              Live Store
             </span>
           </Link>
 
@@ -327,6 +339,16 @@ export const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            {(user?.role === 'SELLER' || user?.role === 'ADMIN') && (
+              <Link
+                to="/seller"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-base font-semibold text-amber-700 dark:text-amber-400 py-1.5 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800"
+              >
+                <Store className="w-4 h-4 text-amber-600" />
+                <span>Seller Portal ({user?.storeName || 'Merchant'})</span>
+              </Link>
+            )}
             {isAdmin && (
               <Link
                 to="/admin"

@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Tags,
   Store,
+  Building,
   LogOut,
   ShieldAlert,
 } from 'lucide-react';
@@ -35,6 +36,7 @@ export const AdminLayout = () => {
 
   const navItems = [
     { label: 'Overview', path: '/admin', icon: LayoutDashboard },
+    { label: 'Marketplace Sellers', path: '/admin/sellers', icon: Building },
     { label: 'Products & Stock', path: '/admin/products', icon: Package },
     { label: 'Customer Orders', path: '/admin/orders', icon: ShoppingCart },
     { label: 'Categories', path: '/admin/categories', icon: Tags },

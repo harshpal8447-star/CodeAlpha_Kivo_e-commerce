@@ -98,6 +98,9 @@ export const getProducts = async (req, res, next) => {
           category: {
             select: { id: true, name: true, slug: true },
           },
+          seller: {
+            select: { id: true, name: true, storeName: true, companyName: true, sellerCity: true },
+          },
         },
       }),
     ]);
@@ -164,6 +167,9 @@ export const getProductBySlugOrId = async (req, res, next) => {
       },
       include: {
         category: true,
+        seller: {
+          select: { id: true, name: true, storeName: true, companyName: true, sellerCity: true, sellerBio: true },
+        },
         reviews: {
           orderBy: { createdAt: 'desc' },
           include: {

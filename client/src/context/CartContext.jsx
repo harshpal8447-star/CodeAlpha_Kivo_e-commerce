@@ -32,8 +32,8 @@ export const CartProvider = ({ children }) => {
     const subtotal = parseFloat(
       items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
     );
-    const shipping = subtotal === 0 || subtotal >= 50 ? 0 : 5.99;
-    const tax = parseFloat((subtotal * 0.08).toFixed(2));
+    const shipping = subtotal === 0 || subtotal >= 999 ? 0 : 99.00;
+    const tax = parseFloat((subtotal * 0.18).toFixed(2));
     const total = parseFloat((subtotal + shipping + tax).toFixed(2));
 
     return {
@@ -207,6 +207,11 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const getItemQuantity = (productId) => {
+    const item = cart.items.find((i) => i.productId === productId || i.id === productId);
+    return item ? item.quantity : 0;
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -218,6 +223,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         removeFromCart,
         clearCart,
+        getItemQuantity,
         toast,
         showToast,
       }}

@@ -35,4 +35,14 @@ export const adminService = {
     const res = await api.patch(`/admin/orders/${id}/status`, { status });
     return res.data?.order;
   },
+
+  getSellers: async () => {
+    const res = await api.get('/admin/sellers');
+    return res.data?.sellers || [];
+  },
+
+  updateSellerStatus: async (id, isSellerApproved) => {
+    const res = await api.patch(`/admin/sellers/${id}/status`, { isSellerApproved });
+    return res.data?.seller;
+  },
 };

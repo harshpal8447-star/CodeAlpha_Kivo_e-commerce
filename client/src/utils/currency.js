@@ -18,4 +18,6 @@ export const formatINRWithDecimals = (amount) => {
   });
 };
 
+export const formatRupee = formatINR;
+
 export default formatINR;

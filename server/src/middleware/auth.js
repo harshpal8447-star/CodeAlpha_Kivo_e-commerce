@@ -30,6 +30,12 @@ export const authenticate = async (req, res, next) => {
         email: true,
         name: true,
         role: true,
+        storeName: true,
+        companyName: true,
+        sellerGstin: true,
+        sellerPhone: true,
+        sellerCity: true,
+        isSellerApproved: true,
         createdAt: true,
       },
     });
@@ -93,6 +99,22 @@ export const requireAdmin = (req, res, next) => {
     return res.status(403).json({
       success: false,
       message: 'Access denied. Administrative privileges are required.',
+    });
+  }
+  next();
+};
+
+export const requireSeller = (req, res, next) => {
+  if (!req.user || (req.user.role !== 'SELLER' && req.user.role !== 'ADMIN')) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Seller account required.',
+    });
+  }
+  if (req.user.role === 'SELLER' && req.user.isSellerApproved === false) {
+    return res.status(403).json({
+      success: false,
+      message: 'Your seller account is pending admin approval.',
     });
   }
   next();

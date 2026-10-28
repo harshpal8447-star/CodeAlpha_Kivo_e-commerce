@@ -116,8 +116,8 @@ export const HomePage = () => {
                         <p className="text-xs text-slate-500 mt-0.5">Custom beryllium drivers &bull; 42hr battery</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-extrabold text-lg text-slate-900 dark:text-white">₹24,999</span>
-                        <span className="block text-[11px] text-slate-400 line-through">₹29,999</span>
+                        <span className="font-extrabold text-lg text-slate-900 dark:text-white">₹1,499</span>
+                        <span className="block text-[11px] text-slate-400 line-through">₹2,499</span>
                       </div>
                     </div>
                   </div>
@@ -196,11 +196,11 @@ export const HomePage = () => {
 
             <div className="flex flex-col items-start lg:items-end gap-3 flex-shrink-0">
               <Link
-                to="/products?minutes=true"
+                to="/minutes"
                 className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-extrabold text-sm sm:text-base shadow-xl hover:scale-105 transition-all"
               >
                 <Zap className="w-5 h-5 fill-amber-400 text-amber-400" />
-                <span>Shop Kivo Minutes (12m)</span>
+                <span>Open Kivo Minutes Storefront (12m)</span>
                 <ArrowRight className="w-4 h-4 text-amber-300" />
               </Link>
               <span className="text-xs font-semibold text-slate-900">

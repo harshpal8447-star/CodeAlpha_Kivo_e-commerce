@@ -69,18 +69,21 @@ export const createOrder = async (req, res, next) => {
         ? JSON.parse(product.images)
         : product.images;
 
-      const unitPrice = product.price;
+      // Use minutesPrice if available and order is minutes delivery
+      const unitPrice = (isMinutesDelivery && product.minutesPrice) ? product.minutesPrice : product.price;
       const lineTotal = parseFloat((unitPrice * item.quantity).toFixed(2));
       calculatedSubtotal += lineTotal;
 
       itemsToOrder.push({
         productId: product.id,
+        sellerId: product.sellerId || null,
         productName: product.name,
         productSku: product.sku,
         productImage: Array.isArray(images) && images.length > 0 ? images[0] : null,
         unitPrice,
         quantity: item.quantity,
         total: lineTotal,
+        isMinutesItem: Boolean(product.isMinutesEligible),
       });
     }
 
@@ -93,7 +96,9 @@ export const createOrder = async (req, res, next) => {
     }
 
     const discountedSubtotal = Math.max(0, calculatedSubtotal - discount);
-    const shippingFee = discountedSubtotal >= 999 ? 0.0 : 99.0;
+    const shippingFee = isMinutesDelivery
+      ? (discountedSubtotal >= 499 ? 0.0 : 29.0)
+      : (discountedSubtotal >= 999 ? 0.0 : 99.0);
     const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
     const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 
@@ -145,12 +150,15 @@ export const createOrder = async (req, res, next) => {
           items: {
             create: itemsToOrder.map((item) => ({
               productId: item.productId,
+              sellerId: item.sellerId,
               productName: item.productName,
               productSku: item.productSku,
               productImage: item.productImage,
               unitPrice: item.unitPrice,
               quantity: item.quantity,
               total: item.total,
+              status: 'CONFIRMED',
+              isMinutesItem: item.isMinutesItem,
             })),
           },
           payments: {

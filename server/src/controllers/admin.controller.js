@@ -315,3 +315,87 @@ export const updateAdminOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAdminSellers = async (req, res, next) => {
+  try {
+    const sellers = await prisma.user.findMany({
+      where: { role: 'SELLER' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        storeName: true,
+        companyName: true,
+        sellerGstin: true,
+        sellerPhone: true,
+        sellerCity: true,
+        sellerAddress: true,
+        sellerBio: true,
+        isSellerApproved: true,
+        createdAt: true,
+        _count: {
+          select: {
+            sellerProducts: true,
+            sellerOrderItems: true,
+          },
+        },
+        sellerOrderItems: {
+          select: {
+            total: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const formattedSellers = sellers.map((s) => {
+      const totalRevenue = s.sellerOrderItems
+        .filter((it) => it.status !== 'CANCELLED')
+        .reduce((sum, it) => sum + it.total, 0);
+
+      const { sellerOrderItems, ...rest } = s;
+      return {
+        ...rest,
+        totalProducts: s._count.sellerProducts,
+        totalOrdersCount: s._count.sellerOrderItems,
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { sellers: formattedSellers },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateAdminSellerStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { isSellerApproved } = req.body;
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { isSellerApproved: Boolean(isSellerApproved) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        storeName: true,
+        companyName: true,
+        isSellerApproved: true,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Seller status updated successfully.`,
+      data: { seller: updated },
+    });
+  } catch (err) {
+    next(err);
+  }
+};

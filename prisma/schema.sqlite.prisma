@@ -10,17 +10,27 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String
-  role         String    @default("CUSTOMER") // "CUSTOMER" or "ADMIN"
-  addresses    Address[]
-  orders       Order[]
-  cart         Cart?
-  reviews      Review[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id               String       @id @default(cuid())
+  email            String       @unique
+  passwordHash     String
+  name             String
+  role             String       @default("CUSTOMER") // "CUSTOMER", "ADMIN", "SELLER"
+  storeName        String?
+  companyName      String?
+  sellerGstin      String?
+  sellerPhone      String?
+  sellerCity       String?
+  sellerAddress    String?
+  sellerBio        String?
+  isSellerApproved Boolean      @default(true)
+  addresses        Address[]
+  orders           Order[]
+  cart             Cart?
+  reviews          Review[]
+  sellerProducts   Product[]    @relation("SellerProducts")
+  sellerOrderItems OrderItem[]  @relation("SellerOrderItems")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model Address {
@@ -51,28 +61,32 @@ model Category {
 }
 
 model Product {
-  id             String      @id @default(cuid())
-  name           String
-  slug           String      @unique
-  description    String
-  price          Float
-  compareAtPrice Float?
-  sku            String      @unique
-  stock          Int         @default(0)
-  images         String      // JSON array of image URLs
-  categoryId     String
-  category       Category    @relation(fields: [categoryId], references: [id])
-  isFeatured     Boolean     @default(false)
-  isMinutesEligible Boolean  @default(false)
-  deliveryTimeMinutes Int?   @default(12)
-  isActive       Boolean     @default(true)
-  rating         Float       @default(4.8)
-  reviewCount    Int         @default(0)
-  orderItems     OrderItem[]
-  cartItems      CartItem[]
-  reviews        Review[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                  String      @id @default(cuid())
+  name                String
+  slug                String      @unique
+  description         String
+  price               Float
+  compareAtPrice      Float?
+  minutesPrice        Float?      // Differentiated quick-commerce price for Kivo Minutes
+  isMinutesEligible   Boolean     @default(false)
+  deliveryTimeMinutes Int?        @default(12)
+  minutesCategory     String?     // e.g. "Instant Munchies", "Daily Tech", "Beverages"
+  sku                 String      @unique
+  stock               Int         @default(0)
+  images              String      // JSON array of image URLs
+  categoryId          String
+  category            Category    @relation(fields: [categoryId], references: [id])
+  sellerId            String?
+  seller              User?       @relation("SellerProducts", fields: [sellerId], references: [id], onDelete: SetNull)
+  isFeatured          Boolean     @default(false)
+  isActive            Boolean     @default(true)
+  rating              Float       @default(4.8)
+  reviewCount         Int         @default(0)
+  orderItems          OrderItem[]
+  cartItems           CartItem[]
+  reviews             Review[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 }
 
 model Cart {
@@ -124,17 +138,21 @@ model Order {
 }
 
 model OrderItem {
-  id           String   @id @default(cuid())
-  orderId      String
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId    String?
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productName  String   // Frozen name at purchase time
-  productSku   String?  // Frozen SKU
-  productImage String?  // Frozen main image URL
-  unitPrice    Float    // Frozen price at purchase time
-  quantity     Int
-  total        Float
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  sellerId      String?
+  seller        User?    @relation("SellerOrderItems", fields: [sellerId], references: [id], onDelete: SetNull)
+  productName   String   // Frozen name at purchase time
+  productSku    String?  // Frozen SKU
+  productImage  String?  // Frozen main image URL
+  unitPrice     Float    // Frozen price at purchase time
+  quantity      Int
+  total         Float
+  status        String   @default("CONFIRMED") // CONFIRMED, PACKED, DISPATCHED, DELIVERED, CANCELLED
+  isMinutesItem Boolean  @default(false)
 }
 
 model Payment {

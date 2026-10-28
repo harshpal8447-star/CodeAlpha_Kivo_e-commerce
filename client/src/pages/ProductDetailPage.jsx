@@ -11,6 +11,8 @@ import {
   Minus,
   MessageSquare,
   Sparkles,
+  Store,
+  CheckCircle,
 } from 'lucide-react';
 import { productService } from '../services/product.service.js';
 import { useCart } from '../context/CartContext.jsx';
@@ -160,7 +162,7 @@ export const ProductDetailPage = () => {
             />
             {hasDiscount && (
               <span className="absolute top-4 left-4 bg-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
-                Save ${(product.compareAtPrice - product.price).toFixed(2)}
+                Save {formatINR(product.compareAtPrice - product.price)}
               </span>
             )}
           </div>
@@ -221,7 +223,7 @@ export const ProductDetailPage = () => {
           </div>
 
           {/* Pricing */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-baseline gap-3">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex flex-wrap items-baseline gap-3">
             <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
               {formatINR(product.price)}
             </span>
@@ -230,10 +232,32 @@ export const ProductDetailPage = () => {
                 {formatINR(product.compareAtPrice)}
               </span>
             )}
+            {product.isMinutesEligible && product.minutesPrice && (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                ⚡ Kivo Minutes Special: {formatINR(product.minutesPrice)}
+              </span>
+            )}
             <span className="text-xs text-teal-700 dark:text-teal-400 font-semibold ml-auto">
               In Stock & Ready to Dispatch
             </span>
           </div>
+
+          {/* Seller / Store Information */}
+          {product.seller && (
+            <div className="flex items-center gap-2.5 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700 text-xs">
+              <Store className="w-4 h-4 text-teal-600 shrink-0" />
+              <span className="text-slate-500">Sold & Fulfilled by:</span>
+              <strong className="text-slate-900 dark:text-white font-bold">
+                {product.seller.storeName || product.seller.companyName || product.seller.name}
+              </strong>
+              {product.seller.sellerCity && (
+                <span className="text-slate-400">({product.seller.sellerCity})</span>
+              )}
+              <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                <CheckCircle className="w-3 h-3" /> Verified Partner
+              </span>
+            </div>
+          )}
 
           {/* Kivo Minutes Instant Delivery Pill */}
           {product.isMinutesEligible && (

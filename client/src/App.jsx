@@ -7,11 +7,13 @@ import { CartProvider } from './context/CartContext.jsx';
 // Layouts
 import RootLayout from './layouts/RootLayout.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
+import SellerLayout from './layouts/SellerLayout.jsx';
 
 // Pages
 import HomePage from './pages/HomePage.jsx';
 import ProductsPage from './pages/ProductsPage.jsx';
 import ProductDetailPage from './pages/ProductDetailPage.jsx';
+import KivoMinutesPage from './pages/KivoMinutesPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import OrderSuccessPage from './pages/OrderSuccessPage.jsx';
@@ -28,6 +30,12 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminProductsPage from './pages/admin/AdminProductsPage.jsx';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage.jsx';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage.jsx';
+import AdminSellersPage from './pages/admin/AdminSellersPage.jsx';
+
+// Seller Pages
+import SellerDashboardPage from './pages/seller/SellerDashboardPage.jsx';
+import SellerProductsPage from './pages/seller/SellerProductsPage.jsx';
+import SellerOrdersPage from './pages/seller/SellerOrdersPage.jsx';
 
 // Protected Route Guard
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +66,7 @@ export const App = () => {
                 <Route index element={<HomePage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/:identifier" element={<ProductDetailPage />} />
+                <Route path="minutes" element={<KivoMinutesPage />} />
                 <Route path="cart" element={<CartPage />} />
                 <Route
                   path="checkout"
@@ -114,6 +123,14 @@ export const App = () => {
                 <Route path="products" element={<AdminProductsPage />} />
                 <Route path="orders" element={<AdminOrdersPage />} />
                 <Route path="categories" element={<AdminCategoriesPage />} />
+                <Route path="sellers" element={<AdminSellersPage />} />
+              </Route>
+
+              {/* Protected Multi-Vendor Seller Portal Layout */}
+              <Route path="/seller" element={<SellerLayout />}>
+                <Route index element={<SellerDashboardPage />} />
+                <Route path="products" element={<SellerProductsPage />} />
+                <Route path="orders" element={<SellerOrdersPage />} />
               </Route>
             </Routes>
           </BrowserRouter>
