@@ -96,9 +96,11 @@ export const createOrder = async (req, res, next) => {
     }
 
     const discountedSubtotal = Math.max(0, calculatedSubtotal - discount);
+    // Standard normal delivery is ₹40 (free over ₹499 like Amazon/Flipkart).
+    // Quick 15-minute Kivo Minutes delivery is ₹69 (free over ₹999).
     const shippingFee = isMinutesDelivery
-      ? (discountedSubtotal >= 499 ? 0.0 : 29.0)
-      : (discountedSubtotal >= 999 ? 0.0 : 99.0);
+      ? (discountedSubtotal >= 999 ? 0.0 : 69.0)
+      : (discountedSubtotal >= 499 ? 0.0 : 40.0);
     const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
     const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 

@@ -298,6 +298,19 @@ export const OrderDetailPage = () => {
                     <span className="text-slate-500 block text-xs mt-0.5">
                       {formatINR(item.unitPrice)} &times; {item.quantity}
                     </span>
+                    <div className="mt-1">
+                      {item.isMinutesItem ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                          <Zap className="w-2.5 h-2.5 fill-amber-500" />
+                          <span>⚡ 10–15 Mins Hyperlocal Delivery</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                          <Truck className="w-2.5 h-2.5" />
+                          <span>Standard Courier Dispatch (2–4 Days)</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

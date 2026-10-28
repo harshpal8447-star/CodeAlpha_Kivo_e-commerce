@@ -10,6 +10,7 @@ import {
   Tag,
   ArrowLeft,
   Truck,
+  Zap,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 import { formatINR } from '../utils/currency.js';
@@ -38,7 +39,8 @@ export const CartPage = () => {
   };
 
   const finalSubtotal = Math.max(0, cart.subtotal - promoDiscount);
-  const finalShipping = finalSubtotal === 0 || finalSubtotal >= 999 ? 0 : 99;
+  // Standard delivery is ₹40, free on orders ₹499 and above (like Amazon / Flipkart)
+  const finalShipping = finalSubtotal === 0 || finalSubtotal >= 499 ? 0 : 40;
   const finalTax = parseFloat((finalSubtotal * 0.18).toFixed(2));
   const finalTotal = parseFloat((finalSubtotal + finalShipping + finalTax).toFixed(2));
 
@@ -113,10 +115,24 @@ export const CartPage = () => {
                       {formatINR(item.price * item.quantity)}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">SKU: {item.sku || 'KV-ITEM'}</p>
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1">
-                    {formatINR(item.price)} each
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <span className="text-xs text-slate-400">SKU: {item.sku || 'KV-ITEM'}</span>
+                    <span>•</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {formatINR(item.price)} each
+                    </span>
+                    {item.isMinutesEligible ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
+                        <Zap className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                        <span>⚡ 10–15 Min Delivery Eligible</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+                        <Truck className="w-2.5 h-2.5" />
+                        <span>Standard Shipping (2–4 Days)</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Quantity Controls & Line Total */}

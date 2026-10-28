@@ -48,9 +48,23 @@ export const CheckoutPage = () => {
   // Payment Options
   const [paymentMethod, setPaymentMethod] = useState('DEMO_PAYMENT');
   const [paymentSimulation, setPaymentSimulation] = useState('SUCCESS'); // 'SUCCESS' or 'FAILED'
-  const [isMinutesDelivery, setIsMinutesDelivery] = useState(true);
+  const [isMinutesDelivery, setIsMinutesDelivery] = useState(
+    location.search.includes('speed=minutes') || false
+  );
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Cart item quick-delivery eligibility analysis
+  const minutesEligibleCount = cart.items.filter((i) => i.isMinutesEligible).length;
+  const standardOnlyCount = cart.items.length - minutesEligibleCount;
+  const hasMinutesEligibleItems = minutesEligibleCount > 0;
+
+  // Auto-switch to standard shipping if bag has zero minutes-eligible items
+  useEffect(() => {
+    if (!hasMinutesEligibleItems && isMinutesDelivery) {
+      setIsMinutesDelivery(false);
+    }
+  }, [hasMinutesEligibleItems, isMinutesDelivery]);
 
   // Load saved addresses for authenticated users
   useEffect(() => {
@@ -172,9 +186,11 @@ export const CheckoutPage = () => {
 
   const discount = passedPromo === 'KIVO10' ? parseFloat((cart.subtotal * 0.1).toFixed(2)) : 0;
   const discountedSubtotal = Math.max(0, cart.subtotal - discount);
+  // Standard normal delivery is ₹40.00 (FREE on orders >= ₹499 like Amazon/Flipkart)
+  // Premium 15-Minute Kivo Minutes delivery is ₹69.00 (FREE on orders >= ₹999)
   const shippingFee = isMinutesDelivery
-    ? (discountedSubtotal >= 999 ? 0 : 29)
-    : (discountedSubtotal >= 999 ? 0 : 99);
+    ? (discountedSubtotal >= 999 ? 0 : 69)
+    : (discountedSubtotal >= 499 ? 0 : 40);
   const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
   const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 
@@ -368,36 +384,7 @@ export const CheckoutPage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Option 1: ⚡ Kivo Minutes Hyperlocal */}
-              <div
-                onClick={() => setIsMinutesDelivery(true)}
-                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  isMinutesDelivery
-                    ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/30 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-amber-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-1.5 font-black text-xs text-slate-950 dark:text-amber-300">
-                    <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
-                    <span>⚡ Kivo Minutes Dispatch</span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase bg-slate-950 text-amber-300 px-2 py-0.5 rounded-full">
-                    10–15 Mins
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  Instant dark store dispatch via dedicated electric two-wheeler fleet.
-                </p>
-                <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                  <span>Delivery Fee:</span>
-                  <span className="text-teal-700 dark:text-teal-400">
-                    {discountedSubtotal >= 999 ? 'FREE (Orders > ₹999)' : '₹29.00'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Option 2: Standard Delivery */}
+              {/* Option 1: Standard Normal Delivery */}
               <div
                 onClick={() => setIsMinutesDelivery(false)}
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
@@ -409,23 +396,81 @@ export const CheckoutPage = () => {
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900 dark:text-white">
                     <Truck className="w-4 h-4 text-teal-600" />
-                    <span>Standard Express Shipping</span>
+                    <span>Standard Courier Delivery</span>
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-500">
-                    1–2 Days
+                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+                    2–4 Days
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  Insured air courier dispatch via Blue Dart / Delhivery express.
+                  Reliable ground and air delivery via Blue Dart & Delhivery courier networks.
                 </p>
                 <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                  <span>Delivery Fee:</span>
-                  <span className="text-teal-700 dark:text-teal-400">
-                    {discountedSubtotal >= 999 ? 'FREE (Orders > ₹999)' : '₹99.00'}
+                  <span>Standard Fee:</span>
+                  <span className="text-teal-700 dark:text-teal-400 font-extrabold">
+                    {discountedSubtotal >= 499 ? 'FREE (Orders > ₹499)' : '₹40.00'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Option 2: ⚡ Kivo Minutes Hyperlocal (Available ONLY for eligible items) */}
+              <div
+                onClick={() => {
+                  if (hasMinutesEligibleItems) setIsMinutesDelivery(true);
+                }}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  !hasMinutesEligibleItems
+                    ? 'opacity-50 cursor-not-allowed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40'
+                    : isMinutesDelivery
+                    ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/30 shadow-sm cursor-pointer'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-amber-300 cursor-pointer'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5 font-black text-xs text-slate-950 dark:text-amber-300">
+                    <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    <span>⚡ Kivo Minutes Express</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase bg-slate-950 text-amber-300 px-2 py-0.5 rounded-full">
+                    10–15 Mins
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  {hasMinutesEligibleItems
+                    ? 'Instant micro-warehouse dispatch via dedicated electric scooter fleet.'
+                    : 'Unavailable: No items in your bag qualify for 10-15 minute delivery.'}
+                </p>
+                <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>Express Fee:</span>
+                  <span className="text-amber-700 dark:text-amber-400 font-extrabold">
+                    {!hasMinutesEligibleItems
+                      ? 'N/A'
+                      : discountedSubtotal >= 999
+                      ? 'FREE (Orders > ₹999)'
+                      : '₹69.00'}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* Split Bag Notice if mixed */}
+            {hasMinutesEligibleItems && standardOnlyCount > 0 && (
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                <Zap className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Split Fulfillment Note:</strong> {minutesEligibleCount} item(s) are eligible for 10-15 minute dark-store dispatch. {standardOnlyCount} other item(s) can only be delivered via Standard Shipping (2-4 days) as they are standard marketplace products.
+                </span>
+              </div>
+            )}
+
+            {!hasMinutesEligibleItems && (
+              <div className="p-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <Truck className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>
+                  All items in your current bag are standard marketplace products and will be delivered via Standard Courier (₹40 / Free over ₹499). To order items in 10-15 minutes, browse the <strong>Kivo Minutes</strong> section.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Step 3: Payment Method */}
@@ -536,34 +581,49 @@ export const CheckoutPage = () => {
               Review Bag ({cart.itemCount} items)
             </h3>
 
-            {/* Compact items list */}
-            <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 pr-1">
+            {/* Compact items list with Delivery Eligibility */}
+            <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 pr-1">
               {cart.items.map((item) => (
-                <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
+                <div key={item.id} className="py-3 flex items-start justify-between text-xs gap-3">
+                  <div className="flex items-start gap-3">
                     <img
                       src={item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
                       alt={item.name}
-                      className="w-10 h-10 object-cover rounded-lg bg-slate-100 dark:bg-slate-700"
+                      className="w-11 h-11 object-cover rounded-xl bg-slate-100 dark:bg-slate-700 shrink-0"
                     />
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white line-clamp-1 max-w-[180px]">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-slate-900 dark:text-white line-clamp-1 max-w-[190px]">
                         {item.name}
                       </span>
-                      <span className="text-slate-400">Qty: {item.quantity}</span>
+                      <div className="text-[11px] text-slate-400">
+                        Qty: {item.quantity} × {formatINR(item.price)}
+                      </div>
+                      <div>
+                        {item.isMinutesEligible ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                            <Zap className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                            <span>⚡ 10–15 Min Delivery Eligible</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">
+                            <Truck className="w-2.5 h-2.5" />
+                            <span>Standard Shipping (2–4 Days)</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <span className="font-extrabold text-slate-900 dark:text-white">
+                  <span className="font-extrabold text-slate-900 dark:text-white shrink-0">
                     {formatINR(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Pricing Breakdown */}
-            <div className="space-y-2 text-xs sm:text-sm pt-2 border-t border-slate-100 dark:border-slate-700">
+            {/* Pricing Breakdown & Delivery Bill */}
+            <div className="space-y-2 text-xs sm:text-sm pt-3 border-t border-slate-100 dark:border-slate-700">
               <div className="flex justify-between text-slate-500">
-                <span>Subtotal</span>
+                <span>Items Subtotal</span>
                 <span className="font-semibold text-slate-900 dark:text-white">
                   {formatINR(cart.subtotal)}
                 </span>
@@ -577,8 +637,23 @@ export const CheckoutPage = () => {
               )}
 
               <div className="flex justify-between text-slate-500">
-                <span>Shipping</span>
-                <span>{shippingFee === 0 ? 'Complimentary' : formatINR(shippingFee)}</span>
+                <span className="flex items-center gap-1">
+                  <span>Delivery & Handling</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+                    {isMinutesDelivery ? '⚡ 15-Min Express' : 'Standard Delivery'}
+                  </span>
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  {shippingFee === 0 ? 'Complimentary' : formatINR(shippingFee)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-[11px] text-slate-400">
+                <span>
+                  {isMinutesDelivery
+                    ? '⚡ Kivo Minutes Instant Rider Dispatch (Free > ₹999)'
+                    : '📦 Standard Blue Dart Courier (Free > ₹499)'}
+                </span>
               </div>
 
               <div className="flex justify-between text-slate-500">
@@ -587,7 +662,7 @@ export const CheckoutPage = () => {
               </div>
 
               <div className="flex justify-between text-base font-extrabold text-slate-900 dark:text-white pt-3 border-t border-slate-100 dark:border-slate-700">
-                <span>Total Due</span>
+                <span>Total Bill Amount</span>
                 <span className="text-teal-700 dark:text-teal-400 font-extrabold">
                   {formatINR(grandTotal)}
                 </span>

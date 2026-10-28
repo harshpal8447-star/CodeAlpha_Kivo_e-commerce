@@ -4,7 +4,6 @@ import {
   Store,
   Package,
   Zap,
-  DollarSign,
   TrendingUp,
   Clock,
   ArrowRight,
@@ -13,7 +12,8 @@ import {
   CheckCircle,
   Truck,
   ExternalLink,
-  ShieldCheck,
+  AlertTriangle,
+  Layers,
 } from 'lucide-react';
 import { sellerService } from '../../services/seller.service.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -24,19 +24,22 @@ export const SellerDashboardPage = () => {
   const [metrics, setMetrics] = useState(null);
   const [recentSales, setRecentSales] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSellerData = async () => {
       setLoading(true);
       try {
-        const [metricData, profileData] = await Promise.all([
+        const [metricData, profileData, productsData] = await Promise.all([
           sellerService.getMetrics(),
           sellerService.getProfile(),
+          sellerService.getProducts({ limit: 50 }),
         ]);
         setMetrics(metricData?.metrics || null);
         setRecentSales(metricData?.recentSales || []);
         setProfile(profileData || null);
+        setProducts(productsData?.products || []);
       } catch (err) {
         console.error('Failed to load seller dashboard data:', err);
       } finally {
@@ -54,6 +57,10 @@ export const SellerDashboardPage = () => {
       </div>
     );
   }
+
+  const minutesProducts = products.filter((p) => p.isMinutesEligible);
+  const standardProducts = products.filter((p) => !p.isMinutesEligible);
+  const lowStockProducts = products.filter((p) => p.stock < 10);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -181,12 +188,251 @@ export const SellerDashboardPage = () => {
         </div>
       </div>
 
-      {/* 📦 Recent Buyer Orders Table */}
+      {/* ⚡ TABLE 1: Kivo Minutes Quick-Commerce Hyperlocal Inventory */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-200 dark:border-amber-900/60 overflow-hidden shadow-2xs">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-transparent border-b border-amber-200/80 dark:border-amber-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black">
+              <Zap className="w-5 h-5 fill-slate-950" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>⚡ Kivo Minutes Dark Store Table</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300">
+                  {minutesProducts.length} Quick SKUs Active
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Items stocked in automated micro-fulfillment hubs for guaranteed 10–15 min electric rider dispatch.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/seller/products"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-400 hover:underline"
+          >
+            <span>Manage Quick Inventory</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {minutesProducts.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-500">
+            No products currently enabled for Kivo Minutes dark store fulfillment. Edit products to enable 10-15m quick delivery.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-amber-50/50 dark:bg-amber-950/20 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-4">Item</th>
+                  <th className="py-3 px-4">SKU</th>
+                  <th className="py-3 px-4">Quick Price</th>
+                  <th className="py-3 px-4">Standard Price</th>
+                  <th className="py-3 px-4">ETA</th>
+                  <th className="py-3 px-4">Dark Store Stock</th>
+                  <th className="py-3 px-4">Quick Category</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100/60 dark:divide-amber-900/40">
+                {minutesProducts.map((p) => {
+                  const img = Array.isArray(p.images) ? p.images[0] : p.images;
+                  return (
+                    <tr key={p.id} className="hover:bg-amber-50/30 dark:hover:bg-amber-950/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={img || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
+                            alt={p.name}
+                            className="w-10 h-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-800 shrink-0"
+                          />
+                          <span className="font-bold text-slate-900 dark:text-white block max-w-xs truncate">
+                            {p.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-semibold text-slate-600 dark:text-slate-300">{p.sku}</td>
+                      <td className="py-3 px-4 font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                        {formatRupee(p.minutesPrice || p.price)}
+                      </td>
+                      <td className="py-3 px-4 text-slate-400 line-through">
+                        {formatRupee(p.price)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 font-bold text-[10px]">
+                          <Zap className="w-2.5 h-2.5" /> {p.deliveryTimeMinutes || 12} MINS
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">
+                        {p.stock} units
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                        {p.minutesCategory || 'Essentials'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link
+                          to="/seller/products"
+                          className="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 text-[11px] font-semibold"
+                        >
+                          Edit
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 📦 TABLE 2: Standard Shipping Products Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
+        <div className="p-5 sm:p-6 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center font-black">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>📦 Standard Marketplace Courier Products Table</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300">
+                  {standardProducts.length} Items (2–4 Days Delivery)
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Standard catalog items fulfilled via insured surface and air couriers (Blue Dart & Delhivery).
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/seller/products"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline"
+          >
+            <span>Manage Standard Catalog</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {standardProducts.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-500">
+            No products currently in standard-only shipping.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-4">Item</th>
+                  <th className="py-3 px-4">SKU</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Price</th>
+                  <th className="py-3 px-4">Stock</th>
+                  <th className="py-3 px-4">Delivery Mode</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {standardProducts.map((p) => {
+                  const img = Array.isArray(p.images) ? p.images[0] : p.images;
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={img || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
+                            alt={p.name}
+                            className="w-10 h-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-800 shrink-0"
+                          />
+                          <span className="font-bold text-slate-900 dark:text-white block max-w-xs truncate">
+                            {p.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-semibold text-slate-500">{p.sku}</td>
+                      <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                        {p.category?.name || 'General'}
+                      </td>
+                      <td className="py-3 px-4 font-black text-slate-900 dark:text-white">
+                        {formatRupee(p.price)}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">
+                        {p.stock} units
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-semibold">
+                          <Truck className="w-2.5 h-2.5" /> 2–4 Days Standard
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link
+                          to="/seller/products"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold"
+                        >
+                          Edit
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ⚠️ TABLE 3 (Conditional): Low Inventory Restock Priority Table */}
+      {lowStockProducts.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900/60 overflow-hidden shadow-2xs">
+          <div className="p-5 sm:p-6 bg-rose-50/70 dark:bg-rose-950/20 border-b border-rose-200/80 dark:border-rose-900/60 flex items-center justify-between">
+            <div className="flex items-center gap-2.5 text-rose-900 dark:text-rose-200 font-bold text-xs sm:text-sm">
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
+              <span>Low Stock Replenishment Priority Table ({lowStockProducts.length} items below threshold of 10)</span>
+            </div>
+            <Link to="/seller/products" className="text-xs text-rose-700 dark:text-rose-400 font-bold hover:underline">
+              Restock Now &rarr;
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-rose-50/40 dark:bg-rose-950/10 text-slate-500 font-semibold uppercase text-[11px]">
+                  <th className="py-2.5 px-4">Item</th>
+                  <th className="py-2.5 px-4">SKU</th>
+                  <th className="py-2.5 px-4">Current Units</th>
+                  <th className="py-2.5 px-4">Replenishment Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-rose-100/60 dark:divide-rose-950/40">
+                {lowStockProducts.map((p) => (
+                  <tr key={p.id}>
+                    <td className="py-2.5 px-4 font-bold text-slate-900 dark:text-white">{p.name}</td>
+                    <td className="py-2.5 px-4 font-mono text-slate-500">{p.sku}</td>
+                    <td className="py-2.5 px-4">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 font-bold">
+                        {p.stock} units left
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-4 text-rose-600 dark:text-rose-400 font-semibold">
+                      Urgent Re-order Recommended
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 📦 TABLE 4: Recent Buyer Orders Table */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-2xs">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Recent Buyer Orders
+              Recent Buyer Orders Table
             </h2>
             <p className="text-xs text-slate-500">
               Orders placed by customers for your store's merchandise

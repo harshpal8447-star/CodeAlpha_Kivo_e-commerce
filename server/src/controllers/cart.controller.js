@@ -28,6 +28,9 @@ const formatCartResponse = (cart) => {
       sku: item.product.sku,
       price: item.product.price,
       compareAtPrice: item.product.compareAtPrice,
+      isMinutesEligible: Boolean(item.product.isMinutesEligible),
+      minutesPrice: item.product.minutesPrice,
+      deliveryTimeMinutes: item.product.deliveryTimeMinutes || 12,
       image: Array.isArray(images) && images.length > 0 ? images[0] : null,
       stock: item.product.stock,
       quantity: item.quantity,
@@ -37,8 +40,8 @@ const formatCartResponse = (cart) => {
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = parseFloat(items.reduce((sum, item) => sum + item.lineTotal, 0).toFixed(2));
-  // Free shipping across India over ₹999, else ₹99
-  const shipping = subtotal === 0 || subtotal >= 999 ? 0 : 99;
+  // Standard shipping is ₹40 across India, complimentary on orders over ₹499 (like Amazon & Flipkart)
+  const shipping = subtotal === 0 || subtotal >= 499 ? 0 : 40;
   const tax = parseFloat((subtotal * 0.18).toFixed(2)); // 18% GST
   const total = parseFloat((subtotal + shipping + tax).toFixed(2));
 

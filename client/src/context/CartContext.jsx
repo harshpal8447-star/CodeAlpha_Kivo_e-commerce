@@ -32,7 +32,8 @@ export const CartProvider = ({ children }) => {
     const subtotal = parseFloat(
       items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
     );
-    const shipping = subtotal === 0 || subtotal >= 999 ? 0 : 99.00;
+    // Standard normal delivery is ₹40, complimentary over ₹499 (Amazon / Flipkart pattern)
+    const shipping = subtotal === 0 || subtotal >= 499 ? 0 : 40.00;
     const tax = parseFloat((subtotal * 0.18).toFixed(2));
     const total = parseFloat((subtotal + shipping + tax).toFixed(2));
 
@@ -134,6 +135,9 @@ export const CartProvider = ({ children }) => {
             sku: product.sku,
             price: product.price,
             compareAtPrice: product.compareAtPrice,
+            isMinutesEligible: Boolean(product.isMinutesEligible),
+            minutesPrice: product.minutesPrice || null,
+            deliveryTimeMinutes: product.deliveryTimeMinutes || 12,
             image: primaryImage,
             stock: product.stock,
             quantity: Math.min(product.stock, quantity),
