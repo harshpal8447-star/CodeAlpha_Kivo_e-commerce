@@ -110,6 +110,15 @@ export const AdminLayout = () => {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-bold border border-teal-200 dark:border-teal-800 transition-colors"
+              title="Visit live marketplace storefront"
+            >
+              <Store className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>🛍️ Storefront</span>
+            </Link>
+
             <div className="text-right">
               <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                 {user.name}

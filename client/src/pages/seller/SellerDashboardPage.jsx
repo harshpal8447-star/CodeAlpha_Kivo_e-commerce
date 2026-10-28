@@ -525,6 +525,50 @@ export const SellerDashboardPage = () => {
           </div>
         )}
       </div>
+
+      {/* Storefront Access Banner (Bottom navigation for Seller) */}
+      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-teal-800/50 shadow-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold border border-teal-500/30">
+              <Store className="w-3.5 h-3.5" />
+              <span>Seller Storefront Navigation</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              View Your Store & Products on Live Marketplace
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Check how your listed inventory and Kivo Minutes micro-store catalog appear to live shoppers. Test cart additions, verify pricing, and inspect customer delivery tags.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow hover:shadow-lg hover:scale-105"
+            >
+              <Store className="w-4 h-4" />
+              <span>Go to Storefront Home</span>
+            </Link>
+
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors border border-slate-700"
+            >
+              <Package className="w-4 h-4 text-teal-400" />
+              <span>View Public Catalog</span>
+            </Link>
+
+            <Link
+              to="/minutes"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs transition-colors shadow"
+            >
+              <Zap className="w-4 h-4 fill-slate-950" />
+              <span>⚡ Kivo Minutes Live</span>
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

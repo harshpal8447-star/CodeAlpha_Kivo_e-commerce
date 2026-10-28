@@ -10,11 +10,22 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/';
+
+  // If user is already authenticated as ADMIN or SELLER, auto-redirect directly to their dashboard
+  React.useEffect(() => {
+    if (user) {
+      if (user.role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'SELLER') {
+        navigate('/seller', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,17 +33,20 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const authUser = await login({ email, password });
-      if (from === '/') {
-        if (authUser?.role === 'SELLER') {
-          navigate('/seller', { replace: true });
-          return;
-        }
-        if (authUser?.role === 'ADMIN') {
-          navigate('/admin', { replace: true });
-          return;
-        }
+      const response = await login({ email, password });
+      const loggedUser = response?.user || response;
+      const role = loggedUser?.role;
+
+      // Super Admin and Sellers directly land on their performance & revenue dashboards
+      if (role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+        return;
       }
+      if (role === 'SELLER') {
+        navigate('/seller', { replace: true });
+        return;
+      }
+
       navigate(from, { replace: true });
     } catch (err) {
       setErrorMessage(err.message || 'Invalid email or password.');

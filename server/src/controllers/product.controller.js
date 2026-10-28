@@ -41,6 +41,9 @@ export const getProducts = async (req, res, next) => {
         { name: { contains: q } },
         { description: { contains: q } },
         { sku: { contains: q } },
+        { category: { name: { contains: q } } },
+        { category: { slug: { contains: q } } },
+        { seller: { storeName: { contains: q } } },
       ];
     }
 

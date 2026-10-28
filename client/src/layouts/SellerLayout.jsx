@@ -128,9 +128,46 @@ export const SellerLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 sm:px-8 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-bold text-slate-800 dark:text-slate-100">
+              {user.storeName || user.companyName || 'Seller Partner Console'}
+            </span>
+            <span className="hidden sm:inline-block text-slate-400">&bull;</span>
+            <span className="hidden sm:inline-block text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
+              Active Merchant Portal
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-bold border border-teal-200 dark:border-teal-800 transition-colors"
+              title="Visit live marketplace storefront"
+            >
+              <Store className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>🛍️ Storefront</span>
+            </Link>
+
+            <div className="text-right">
+              <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                {user.name}
+              </div>
+              <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase">
+                {user.role}
+              </div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 flex items-center justify-center font-bold text-xs">
+              {user.name.charAt(0)}
+            </div>
+          </div>
+        </header>
+
+        <main className="p-6 sm:p-8 flex-1">
+          <Outlet />
+        </main>
+      </div>
 
       {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
