@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, Filter, Eye, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Search, Filter, Eye, ChevronRight, FileSpreadsheet } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatINR } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 
 export const AdminOrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -31,6 +32,44 @@ export const AdminOrdersPage = () => {
   useEffect(() => {
     loadOrders();
   }, [statusFilter]);
+
+  const handleExportOrders = () => {
+    if (!orders || orders.length === 0) {
+      alert('No orders available to export.');
+      return;
+    }
+
+    const data = orders.map((o) => {
+      let parsedAddr = {};
+      try {
+        parsedAddr = typeof o.shippingAddress === 'string' ? JSON.parse(o.shippingAddress || '{}') : o.shippingAddress || {};
+      } catch {
+        parsedAddr = {};
+      }
+      const itemSummaries = (o.items || []).map((i) => `${i.productName} (x${i.quantity})`).join(', ');
+
+      return {
+        'Order Number': o.orderNumber,
+        'Order Date': new Date(o.createdAt).toLocaleDateString('en-IN'),
+        'Customer Name': o.customerName,
+        'Customer Email': o.customerEmail,
+        'Order Status': o.status,
+        'Delivery Type': o.isMinutesDelivery ? '⚡ 10-15 Min Hyperlocal' : '📦 Standard Courier',
+        'Items Count': o.items?.length || 0,
+        'Items Summary': itemSummaries,
+        'Subtotal (₹)': o.subtotal,
+        'Delivery Fee (₹)': o.shippingFee,
+        'Tax (₹)': o.tax,
+        'Total Amount (₹)': o.total,
+        'Payment Method': o.paymentMethod,
+        'Payment Status': o.paymentStatus,
+        'Destination City': parsedAddr.city || '',
+        'Destination Pincode': parsedAddr.postalCode || '',
+      };
+    });
+
+    exportToExcel(data, 'Kivo_Marketplace_Orders_Master', 'Orders Master');
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -65,13 +104,24 @@ export const AdminOrdersPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Customer Orders & Fulfillment
-        </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Process shipments, track payment states, and update fulfillment milestones.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Customer Orders & Fulfillment
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Process shipments, track payment states, and update fulfillment milestones.
+          </p>
+        </div>
+
+        <button
+          onClick={handleExportOrders}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors self-start sm:self-auto"
+          title="Download all platform orders as Excel spreadsheet (.xlsx)"
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Export All Orders (.xlsx)</span>
+        </button>
       </div>
 
       {/* Search & Filter Bar */}

@@ -12,11 +12,13 @@ import {
   Truck,
   AlertTriangle,
   Layers,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { productService } from '../../services/product.service.js';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatINR } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 
 export const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -149,6 +151,33 @@ export const AdminProductsPage = () => {
     );
   });
 
+  const handleExportCatalog = () => {
+    if (!products || products.length === 0) {
+      alert('No products available to export.');
+      return;
+    }
+
+    const data = products.map((p) => ({
+      'SKU': p.sku,
+      'Product Name': p.name,
+      'Category': p.category?.name || 'General',
+      'Target Department': p.gender || 'UNISEX',
+      'Merchant / Seller': p.seller?.storeName || p.seller?.companyName || 'Kivo Direct',
+      'Standard Price (₹)': p.price,
+      'Compare At Price (₹)': p.compareAtPrice || '',
+      'Kivo Minutes Price (₹)': p.minutesPrice || '',
+      '10-15 Min Eligible': p.isMinutesEligible ? 'YES' : 'NO',
+      'Delivery SLA': p.isMinutesEligible ? `${p.deliveryTimeMinutes || 12} Mins` : '2-4 Days Standard',
+      'Stock Units': p.stock,
+      'Stock Status': p.stock <= 0 ? 'Out of Stock' : p.stock <= 10 ? 'Low Stock' : 'In Stock',
+      'Rating': p.rating || 4.8,
+      'Reviews Count': p.reviewCount || 0,
+      'Listing Status': p.isActive ? 'Active' : 'Disabled',
+    }));
+
+    exportToExcel(data, 'Kivo_Master_Product_Catalog', 'Master Catalog');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-4">
@@ -161,13 +190,24 @@ export const AdminProductsPage = () => {
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportCatalog}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+            title="Download full catalog as Excel spreadsheet (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Export Catalog (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Input & Segment Filter Tabs */}

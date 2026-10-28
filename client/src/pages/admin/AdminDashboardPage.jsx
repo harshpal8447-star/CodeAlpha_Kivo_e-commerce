@@ -12,9 +12,11 @@ import {
   Store,
   Truck,
   CheckCircle,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { formatINR } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 
 export const AdminDashboardPage = () => {
   const [data, setData] = useState(null);
@@ -83,15 +85,39 @@ export const AdminDashboardPage = () => {
     },
   ];
 
+  const handleExportExecutiveReport = () => {
+    const summaryData = [
+      { Metric: 'Total Gross Revenue (₹)', Value: metrics.totalRevenue },
+      { Metric: 'Total Customer Orders', Value: metrics.totalOrders },
+      { Metric: 'Active Product SKUs', Value: metrics.totalProducts },
+      { Metric: 'Registered Buyers', Value: metrics.totalCustomers },
+      { Metric: 'Registered Partner Sellers', Value: sellers.length },
+      { Metric: 'Low Stock SKU Alerts', Value: lowStockAlerts.length },
+      { Metric: 'Export Timestamp', Value: new Date().toLocaleString('en-IN') },
+    ];
+    exportToExcel(summaryData, 'Kivo_Executive_Performance_Summary', 'Executive Summary');
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Executive Store Overview
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Live summary of commerce metrics, inventory replenishment flags, and dispatch queues.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Executive Store Overview
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Live summary of commerce metrics, inventory replenishment flags, and dispatch queues.
+          </p>
+        </div>
+
+        <button
+          onClick={handleExportExecutiveReport}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors self-start sm:self-auto"
+          title="Download executive KPI metrics as Excel (.xlsx)"
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Export Summary (.xlsx)</span>
+        </button>
       </div>
 
       {/* Metric KPI Cards */}

@@ -49,10 +49,11 @@ export const Navbar = () => {
     { name: 'Audio & Tech', path: '/products?category=audio-tech' },
     { name: 'Home & Living', path: '/products?category=home-living' },
     { name: 'Apparel', path: '/products?category=apparel' },
-    { name: 'Bags & Carry', path: '/products?category=bags-carry' },
-    { name: 'Footwear', path: '/products?category=footwear' },
-    { name: 'Wellness & Scents', path: '/products?category=wellness-scents' },
+    { name: 'Jewellery & Fine Adornments', path: '/products?category=jewellery' },
     { name: 'Watches & Accessories', path: '/products?category=watches-accessories' },
+    { name: 'Footwear', path: '/products?category=footwear' },
+    { name: 'Bags & Carry', path: '/products?category=bags-carry' },
+    { name: 'Wellness & Scents', path: '/products?category=wellness-scents' },
     { name: 'Workspace & Desk', path: '/products?category=workspace-desk' },
   ];
 
@@ -303,6 +304,93 @@ export const Navbar = () => {
         </div>
       </div>
 
+      {/* 🏷️ Amazon & Flipkart Style Department & Quick Navigation Sub-Bar */}
+      <div className="bg-slate-50/90 dark:bg-slate-800/90 border-t border-b border-slate-200/60 dark:border-slate-800 text-xs overflow-x-auto no-scrollbar py-2 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+          <Link
+            to="/products"
+            className="px-2.5 py-1 rounded-lg font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5"
+          >
+            <Menu className="w-3.5 h-3.5" />
+            <span>All Catalog</span>
+          </Link>
+
+          <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1 shrink-0" />
+
+          {/* Men Department */}
+          <Link
+            to="/products?gender=men"
+            className="px-2.5 py-1 rounded-lg font-bold text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 transition-colors border border-teal-200/60 dark:border-teal-800/60 flex items-center gap-1"
+          >
+            <span>👔 Men</span>
+          </Link>
+
+          {/* Women Department */}
+          <Link
+            to="/products?gender=women"
+            className="px-2.5 py-1 rounded-lg font-bold text-rose-800 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors border border-rose-200/60 dark:border-rose-800/60 flex items-center gap-1"
+          >
+            <span>👗 Women</span>
+          </Link>
+
+          {/* Kids Department */}
+          <Link
+            to="/products?gender=kids"
+            className="px-2.5 py-1 rounded-lg font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors border border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1"
+          >
+            <span>🧸 Kids</span>
+          </Link>
+
+          {/* Jewellery Department */}
+          <Link
+            to="/products?category=jewellery"
+            className="px-2.5 py-1 rounded-lg font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors border border-indigo-200/60 dark:border-indigo-800/60 flex items-center gap-1"
+          >
+            <span>💍 Jewellery</span>
+          </Link>
+
+          <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 mx-1 shrink-0" />
+
+          {/* Kivo Minutes 10-15 Min Hyperlocal */}
+          <Link
+            to="/minutes"
+            className="px-3 py-1 rounded-lg font-extrabold text-amber-950 dark:text-amber-300 bg-amber-300/80 hover:bg-amber-400 dark:bg-amber-950/80 dark:hover:bg-amber-900/80 transition-colors flex items-center gap-1 border border-amber-400/70 dark:border-amber-700 shadow-2xs"
+          >
+            <Zap className="w-3.5 h-3.5 fill-amber-600 text-amber-600 dark:fill-amber-400 dark:text-amber-400" />
+            <span>⚡ Kivo Minutes (10–15m)</span>
+          </Link>
+
+          {/* Fast Category Links */}
+          <Link
+            to="/products?category=apparel"
+            className="px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            Pants & Shirts
+          </Link>
+
+          <Link
+            to="/products?category=watches-accessories"
+            className="px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            Belts & Accessories
+          </Link>
+
+          <Link
+            to="/products?category=audio-tech"
+            className="px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            Audio & Tech
+          </Link>
+
+          <Link
+            to="/products?category=home-living"
+            className="px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            Home & Living
+          </Link>
+        </div>
+      </div>
+
       {/* Mobile drawer menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 pt-2 pb-6 space-y-3">
@@ -320,6 +408,38 @@ export const Navbar = () => {
               Live Store
             </span>
           </Link>
+
+          {/* Mobile Department Shortcuts */}
+          <div className="grid grid-cols-2 gap-2 pt-1 pb-2">
+            <Link
+              to="/products?gender=men"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 dark:border-teal-800/60 text-teal-900 dark:text-teal-200 font-bold text-xs flex items-center justify-center gap-1.5"
+            >
+              <span>👔 Men</span>
+            </Link>
+            <Link
+              to="/products?gender=women"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 font-bold text-xs flex items-center justify-center gap-1.5"
+            >
+              <span>👗 Women</span>
+            </Link>
+            <Link
+              to="/products?gender=kids"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200/60 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 font-bold text-xs flex items-center justify-center gap-1.5"
+            >
+              <span>🧸 Kids</span>
+            </Link>
+            <Link
+              to="/products?category=jewellery"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 font-bold text-xs flex items-center justify-center gap-1.5"
+            >
+              <span>💍 Jewellery</span>
+            </Link>
+          </div>
 
           <nav className="flex flex-col space-y-1">
             <Link

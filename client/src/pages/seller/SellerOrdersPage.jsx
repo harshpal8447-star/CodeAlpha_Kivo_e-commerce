@@ -12,9 +12,11 @@ import {
   Filter,
   PackageCheck,
   Bike,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { sellerService } from '../../services/seller.service.js';
 import { formatRupee } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 
 export const SellerOrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -40,6 +42,42 @@ export const SellerOrdersPage = () => {
   useEffect(() => {
     fetchOrders();
   }, [statusFilter]);
+
+  const handleExportOrders = () => {
+    if (!orders || orders.length === 0) {
+      alert('No seller orders available to export.');
+      return;
+    }
+
+    const data = orders.map((o) => {
+      let parsedAddr = {};
+      try {
+        parsedAddr = typeof o.shippingAddress === 'string' ? JSON.parse(o.shippingAddress || '{}') : o.shippingAddress || {};
+      } catch {
+        parsedAddr = {};
+      }
+      const myItems = o.items || [];
+      const itemSummaries = myItems.map((i) => `${i.productName} (Qty: ${i.quantity}, Total: ₹${i.total})`).join('; ');
+
+      return {
+        'Order Number': o.orderNumber,
+        'Order Date': new Date(o.createdAt).toLocaleDateString('en-IN'),
+        'Customer Name': o.customerName,
+        'Customer Email': o.customerEmail,
+        'Delivery Channel': o.isMinutesDelivery ? '⚡ 10-15 Min Kivo Minutes' : '📦 Standard Courier',
+        'Fulfillment Status': o.status,
+        'Items Ordered': itemSummaries,
+        'Items Count': myItems.length,
+        'Store Subtotal (₹)': o.subtotal,
+        'Total Order (₹)': o.total,
+        'Payment Method': o.paymentMethod,
+        'Payment Status': o.paymentStatus,
+        'Delivery Destination': `${parsedAddr.city || ''}, ${parsedAddr.state || ''} ${parsedAddr.postalCode || ''}`.trim(),
+      };
+    });
+
+    exportToExcel(data, 'Kivo_Seller_Orders_Report', 'Seller Orders');
+  };
 
   const handleUpdateItemStatus = async (itemId, nextStatus) => {
     setUpdatingItemId(itemId);
@@ -79,21 +117,33 @@ export const SellerOrdersPage = () => {
           </p>
         </div>
 
-        {/* Status Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {['ALL', 'CONFIRMED', 'PACKED', 'DISPATCHED', 'DELIVERED'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                statusFilter === st
-                  ? 'bg-teal-700 text-white'
-                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Export Orders Excel Button */}
+          <button
+            onClick={handleExportOrders}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+            title="Download all orders as Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Orders (.xlsx)</span>
+          </button>
+
+          {/* Status Filters */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {['ALL', 'CONFIRMED', 'PACKED', 'DISPATCHED', 'DELIVERED'].map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                  statusFilter === st
+                    ? 'bg-teal-700 text-white'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

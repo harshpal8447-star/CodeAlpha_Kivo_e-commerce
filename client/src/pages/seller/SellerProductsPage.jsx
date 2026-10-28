@@ -15,9 +15,11 @@ import {
   Truck,
   AlertTriangle,
   Layers,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { sellerService } from '../../services/seller.service.js';
 import { formatRupee } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 import api from '../../services/api.js';
 
 export const SellerProductsPage = () => {
@@ -36,6 +38,7 @@ export const SellerProductsPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     categoryId: '',
+    gender: 'UNISEX',
     sku: '',
     description: '',
     price: '',
@@ -163,6 +166,32 @@ export const SellerProductsPage = () => {
     }
   };
 
+  const handleExportInventory = () => {
+    if (!products || products.length === 0) {
+      alert('No products available to export.');
+      return;
+    }
+
+    const data = products.map((p) => ({
+      'SKU': p.sku,
+      'Product Name': p.name,
+      'Category': p.category?.name || 'General',
+      'Target Department': p.gender || 'UNISEX',
+      'Standard Price (₹)': p.price,
+      'Compare At Price (₹)': p.compareAtPrice || '',
+      'Kivo Minutes Price (₹)': p.minutesPrice || '',
+      '10-15 Min Eligible': p.isMinutesEligible ? 'YES' : 'NO',
+      'Delivery SLA': p.isMinutesEligible ? `${p.deliveryTimeMinutes || 12} Mins` : '2-4 Days Standard',
+      'Stock Units': p.stock,
+      'Stock Health': p.stock <= 0 ? 'Out of Stock' : p.stock <= 10 ? 'Low Stock Alert' : 'Healthy',
+      'Customer Rating': p.rating || 4.8,
+      'Reviews Count': p.reviewCount || 0,
+      'Listing Status': p.isActive ? 'Active' : 'Draft',
+    }));
+
+    exportToExcel(data, 'Kivo_Seller_Inventory_Catalog', 'Inventory');
+  };
+
   const filteredProducts = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -193,13 +222,24 @@ export const SellerProductsPage = () => {
           </p>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs shadow-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportInventory}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+            title="Download complete catalog as Excel spreadsheet (.xlsx)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Catalog (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={openAddModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs shadow-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Input & Segment Filter Tabs */}

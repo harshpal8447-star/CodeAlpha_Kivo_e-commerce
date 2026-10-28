@@ -12,9 +12,11 @@ import {
   Mail,
   MapPin,
   TrendingUp,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { adminService } from '../../services/admin.service.js';
 import { formatRupee } from '../../utils/currency.js';
+import { exportToExcel } from '../../utils/excelExport.js';
 
 export const AdminSellersPage = () => {
   const [sellers, setSellers] = useState([]);
@@ -37,6 +39,27 @@ export const AdminSellersPage = () => {
   useEffect(() => {
     loadSellers();
   }, []);
+
+  const handleExportSellers = () => {
+    if (!sellers || sellers.length === 0) {
+      alert('No sellers available to export.');
+      return;
+    }
+
+    const data = sellers.map((s) => ({
+      'Store Name': s.storeName || 'N/A',
+      'Legal Company Name': s.companyName || 'N/A',
+      'GSTIN': s.sellerGstin || 'Unregistered',
+      'City': s.sellerCity || '',
+      'Phone': s.sellerPhone || '',
+      'Email': s.email || '',
+      'Catalog Size': s._count?.sellerProducts || 0,
+      'Lifetime GMV (₹)': s.totalRevenue || 0,
+      'Approval Status': s.isSellerApproved ? 'Verified & Active' : 'Pending Review',
+    }));
+
+    exportToExcel(data, 'Kivo_Marketplace_Sellers_Directory', 'Sellers Directory');
+  };
 
   const handleToggleApproval = async (sellerId, currentApproved) => {
     try {
@@ -85,6 +108,15 @@ export const AdminSellersPage = () => {
             Review registered seller enterprises, GSTIN credentials, catalog sizes, and platform revenue.
           </p>
         </div>
+
+        <button
+          onClick={handleExportSellers}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors self-start sm:self-auto"
+          title="Download sellers directory as Excel (.xlsx)"
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Export Sellers (.xlsx)</span>
+        </button>
       </div>
 
       {/* Search Bar */}

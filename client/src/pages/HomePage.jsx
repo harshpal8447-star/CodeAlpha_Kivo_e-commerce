@@ -139,6 +139,149 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* 👔 👗 🧸 💍 Shop by Department: Men, Women, Kids & Fine Jewellery */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 mb-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Tailored Curations</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Shop by Department
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Explore dedicated wardrobes, tailored pants, Oxford shirts, kids essentials, and artisan silver & gold jewellery.
+            </p>
+          </div>
+          <Link
+            to="/products"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-teal-700 dark:text-teal-400 hover:text-teal-800 transition-colors"
+          >
+            <span>View Full Directory</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Card 1: Men's Department */}
+          <Link
+            to="/products?gender=men"
+            className="group relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=800&q=80"
+                alt="Men's Department"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 text-white">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/30 text-teal-300 font-bold text-[10px] uppercase tracking-wider backdrop-blur-md border border-teal-400/30 w-fit mb-2">
+                <span>👔 Men's Wardrobe</span>
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-teal-300 transition-colors">
+                Men
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                Tailored pleated dress trousers, heavy cargo pants, Oxford shirts, selvedge denim & leather belts.
+              </p>
+              <div className="mt-3 flex items-center gap-1 text-xs font-bold text-teal-400 group-hover:translate-x-1 transition-transform">
+                <span>Shop Men's Collection</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 2: Women's Department */}
+          <Link
+            to="/products?gender=women"
+            className="group relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80"
+                alt="Women's Department"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 text-white">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/30 text-rose-300 font-bold text-[10px] uppercase tracking-wider backdrop-blur-md border border-rose-400/30 w-fit mb-2">
+                <span>👗 Women's Wardrobe</span>
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-rose-300 transition-colors">
+                Women
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                Pure mulberry silk blouses, flowy linen palazzos, tiered summer midi dresses & knit loungewear.
+              </p>
+              <div className="mt-3 flex items-center gap-1 text-xs font-bold text-rose-400 group-hover:translate-x-1 transition-transform">
+                <span>Shop Women's Collection</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 3: Kids' Department */}
+          <Link
+            to="/products?gender=kids"
+            className="group relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=800&q=80"
+                alt="Kids' Department"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 text-white">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/30 text-amber-300 font-bold text-[10px] uppercase tracking-wider backdrop-blur-md border border-amber-400/30 w-fit mb-2">
+                <span>🧸 Kids' Playsets & Apparel</span>
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-amber-300 transition-colors">
+                Kids
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                Organic combed cotton graphic sets, stretch cargo joggers, denim overalls & shatterproof sunglasses.
+              </p>
+              <div className="mt-3 flex items-center gap-1 text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
+                <span>Shop Kids' Collection</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </Link>
+
+          {/* Card 4: Jewellery & Fine Adornments */}
+          <Link
+            to="/products?category=jewellery"
+            className="group relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80"
+                alt="Jewellery & Fine Adornments"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-6 text-white">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-300 font-bold text-[10px] uppercase tracking-wider backdrop-blur-md border border-indigo-400/30 w-fit mb-2">
+                <span>💍 Silver & 18K Gold</span>
+              </div>
+              <h3 className="text-xl font-black text-white group-hover:text-indigo-300 transition-colors">
+                Jewellery
+              </h3>
+              <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                Solid 925 sterling silver Cuban chains, 18K gold-plated bar pendants, baroque pearl earrings & signet rings.
+              </p>
+              <div className="mt-3 flex items-center gap-1 text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
+                <span>Explore Fine Jewellery</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">

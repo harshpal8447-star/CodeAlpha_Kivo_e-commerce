@@ -14,10 +14,12 @@ import {
   Building,
   Zap,
   Phone,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 import { formatINR } from '../utils/currency.js';
+import { exportToExcel } from '../utils/excelExport.js';
 
 export const OrderDetailPage = () => {
   const { id } = useParams();
@@ -99,6 +101,34 @@ export const OrderDetailPage = () => {
   const milestoneKeys = milestones.map((m) => m.key);
   const currentStep = order.status === 'CANCELLED' ? -1 : milestoneKeys.indexOf(order.status);
 
+  const handleExportInvoice = () => {
+    if (!order) return;
+    const itemsData = (order.items || []).map((item, index) => ({
+      'Item No.': index + 1,
+      'Product Name': item.productName,
+      'SKU': item.productSku || 'N/A',
+      'Unit Price (₹)': item.unitPrice,
+      'Quantity': item.quantity,
+      'Line Total (₹)': item.total,
+      'Delivery Tag': item.isMinutesItem ? '⚡ 10-15 Min Hyperlocal' : '📦 Standard Courier (2-4 Days)',
+      'Status': item.status || 'CONFIRMED',
+    }));
+
+    // Add summary row at the bottom
+    itemsData.push({
+      'Item No.': '',
+      'Product Name': 'TOTAL INVOICE AMOUNT',
+      'SKU': '',
+      'Unit Price (₹)': '',
+      'Quantity': '',
+      'Line Total (₹)': order.total,
+      'Delivery Tag': `Subtotal: ₹${order.subtotal} | Shipping: ₹${order.shippingFee} | Tax: ₹${order.tax}`,
+      'Status': `Payment: ${order.paymentStatus}`,
+    });
+
+    exportToExcel(itemsData, `Kivo_Invoice_${order.orderNumber}`, 'Invoice');
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <Breadcrumbs
@@ -129,13 +159,24 @@ export const OrderDetailPage = () => {
           </p>
         </div>
 
-        <Link
-          to="/account/orders"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 dark:text-teal-400 hover:underline"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to All Orders</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportInvoice}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+            title="Download invoice as Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Download Invoice (.xlsx)</span>
+          </button>
+
+          <Link
+            to="/account/orders"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 dark:text-teal-400 hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to All Orders</span>
+          </Link>
+        </div>
       </div>
 
       {/* Live Tracking Timeline */}

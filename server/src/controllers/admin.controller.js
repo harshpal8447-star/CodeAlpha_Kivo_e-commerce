@@ -83,6 +83,7 @@ export const createAdminProduct = async (req, res, next) => {
       images,
       isFeatured,
       isActive,
+      gender,
     } = req.body;
 
     if (!name || !price || !sku || !categoryId) {
@@ -118,6 +119,7 @@ export const createAdminProduct = async (req, res, next) => {
         images: JSON.stringify(imagesArray),
         isFeatured: Boolean(isFeatured),
         isActive: isActive !== undefined ? Boolean(isActive) : true,
+        gender: gender ? gender.trim().toUpperCase() : 'UNISEX',
       },
       include: { category: true },
     });
@@ -152,6 +154,7 @@ export const updateAdminProduct = async (req, res, next) => {
       images,
       isFeatured,
       isActive,
+      gender,
     } = req.body;
 
     const dataToUpdate = {};
@@ -170,6 +173,7 @@ export const updateAdminProduct = async (req, res, next) => {
     }
     if (isFeatured !== undefined) dataToUpdate.isFeatured = Boolean(isFeatured);
     if (isActive !== undefined) dataToUpdate.isActive = Boolean(isActive);
+    if (gender !== undefined) dataToUpdate.gender = gender ? gender.trim().toUpperCase() : 'UNISEX';
 
     const updated = await prisma.product.update({
       where: { id },

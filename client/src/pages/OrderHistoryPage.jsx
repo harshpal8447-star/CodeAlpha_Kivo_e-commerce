@@ -12,10 +12,13 @@ import {
   RotateCcw,
   AlertCircle,
   Zap,
+  FileSpreadsheet,
+  Download,
 } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 import { formatINR } from '../utils/currency.js';
+import { exportToExcel } from '../utils/excelExport.js';
 
 export const OrderHistoryPage = () => {
   const [orders, setOrders] = useState([]);
@@ -37,6 +40,41 @@ export const OrderHistoryPage = () => {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleExportOrders = () => {
+    if (!orders || orders.length === 0) {
+      alert('No orders available to export.');
+      return;
+    }
+
+    const data = orders.map((o) => {
+      let parsedAddr = {};
+      try {
+        parsedAddr = typeof o.shippingAddress === 'string' ? JSON.parse(o.shippingAddress || '{}') : o.shippingAddress || {};
+      } catch {
+        parsedAddr = {};
+      }
+      const itemNames = (o.items || []).map((i) => `${i.productName} (x${i.quantity})`).join(', ');
+
+      return {
+        'Order Number': o.orderNumber,
+        'Order Date': new Date(o.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+        'Fulfillment Status': o.status,
+        'Delivery Mode': o.isMinutesDelivery ? '⚡ 10-15 Min Hyperlocal' : '📦 Standard Courier (2-4 Days)',
+        'Items Count': o.items?.length || 0,
+        'Items Summary': itemNames,
+        'Subtotal (₹)': o.subtotal,
+        'Shipping Fee (₹)': o.shippingFee,
+        'Tax (₹)': o.tax,
+        'Total Amount (₹)': o.total,
+        'Payment Method': o.paymentMethod,
+        'Payment Status': o.paymentStatus,
+        'Shipping Destination': `${parsedAddr.city || ''}, ${parsedAddr.state || ''} ${parsedAddr.postalCode || ''}`.trim(),
+      };
+    });
+
+    exportToExcel(data, 'Kivo_Customer_Order_History', 'Order History');
+  };
 
   const handleTrackSubmit = (e) => {
     e.preventDefault();
@@ -74,25 +112,37 @@ export const OrderHistoryPage = () => {
           </p>
         </div>
 
-        {/* Quick Order Lookup Bar */}
-        <form onSubmit={handleTrackSubmit} className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Track by ref e.g. KV-2026-..."
-              value={trackQuery}
-              onChange={(e) => setTrackQuery(e.target.value)}
-              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-600 font-mono"
-            />
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Download History as Excel Sheet */}
           <button
-            type="submit"
-            className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+            onClick={handleExportOrders}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+            title="Download complete order history as Excel (.xlsx)"
           >
-            Track
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Download Excel (.xlsx)</span>
           </button>
-        </form>
+
+          {/* Quick Order Lookup Bar */}
+          <form onSubmit={handleTrackSubmit} className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Track by ref e.g. KV-2026-..."
+                value={trackQuery}
+                onChange={(e) => setTrackQuery(e.target.value)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-600 font-mono"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-3.5 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+            >
+              Track
+            </button>
+          </form>
+        </div>
       </div>
 
       {loading ? (

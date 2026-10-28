@@ -17,6 +17,7 @@ export const ProductsPage = () => {
 
   // Filters from query params or local state
   const currentCategory = searchParams.get('category') || '';
+  const currentGender = searchParams.get('gender') || '';
   const currentSearch = searchParams.get('search') || '';
   const currentMinutes = searchParams.get('minutes') === 'true';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
@@ -38,6 +39,7 @@ export const ProductsPage = () => {
         page: currentPage,
         limit: 12,
         category: currentCategory,
+        gender: currentGender,
         search: currentSearch,
         minutes: currentMinutes ? 'true' : undefined,
         sort: currentSort,
@@ -60,6 +62,7 @@ export const ProductsPage = () => {
   }, [
     currentPage,
     currentCategory,
+    currentGender,
     currentSearch,
     currentMinutes,
     currentSort,
@@ -98,6 +101,9 @@ export const ProductsPage = () => {
   // Breadcrumb items
   const breadcrumbItems = [
     { label: 'Shop', path: '/products' },
+    ...(currentGender
+      ? [{ label: currentGender.toLowerCase() === 'men' ? "Men's Department" : currentGender.toLowerCase() === 'women' ? "Women's Department" : currentGender.toLowerCase() === 'kids' ? "Kids' Department" : `${currentGender.toUpperCase()} Department` }]
+      : []),
     ...(currentMinutes ? [{ label: '⚡ Kivo Minutes (10–15 Min Delivery)' }] : []),
     ...(currentCategory
       ? [{ label: categories.find((c) => c.slug === currentCategory)?.name || currentCategory }]
@@ -145,6 +151,16 @@ export const ProductsPage = () => {
             <span>
               {currentMinutes
                 ? 'Kivo Minutes Essentials'
+                : currentGender && currentCategory
+                ? `${categories.find((c) => c.slug === currentCategory)?.name || currentCategory} • ${currentGender.toUpperCase()}`
+                : currentGender
+                ? currentGender.toLowerCase() === 'men'
+                  ? "Men's Department & Apparel"
+                  : currentGender.toLowerCase() === 'women'
+                  ? "Women's Department & Adornments"
+                  : currentGender.toLowerCase() === 'kids'
+                  ? "Kids' Clothing & Accessories"
+                  : `${currentGender.toUpperCase()} Department`
                 : currentCategory
                 ? categories.find((c) => c.slug === currentCategory)?.name || 'Category'
                 : currentSearch
@@ -155,6 +171,48 @@ export const ProductsPage = () => {
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Showing {products.length} of {pagination.total} crafted items
           </p>
+
+          {/* Active Filter Chips */}
+          {(currentGender || currentCategory || currentSearch) && (
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {currentGender && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                  <span>Department: {currentGender.toUpperCase()}</span>
+                  <button
+                    onClick={() => updateQueryParam('gender', '')}
+                    className="hover:text-red-500 transition-colors"
+                    title="Remove department filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {currentCategory && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  <span>Category: {categories.find((c) => c.slug === currentCategory)?.name || currentCategory}</span>
+                  <button
+                    onClick={() => updateQueryParam('category', '')}
+                    className="hover:text-red-500 transition-colors"
+                    title="Remove category filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {currentSearch && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  <span>Search: "{currentSearch}"</span>
+                  <button
+                    onClick={() => updateQueryParam('search', '')}
+                    className="hover:text-red-500 transition-colors"
+                    title="Remove search filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -190,6 +248,8 @@ export const ProductsPage = () => {
             categories={categories}
             selectedCategory={currentCategory}
             onSelectCategory={(slug) => updateQueryParam('category', slug)}
+            selectedGender={currentGender}
+            onSelectGender={(gender) => updateQueryParam('gender', gender)}
             minPrice={currentMinPrice}
             maxPrice={currentMaxPrice}
             onPriceChange={handlePriceChange}
@@ -226,6 +286,11 @@ export const ProductsPage = () => {
                   selectedCategory={currentCategory}
                   onSelectCategory={(slug) => {
                     updateQueryParam('category', slug);
+                    setMobileFiltersOpen(false);
+                  }}
+                  selectedGender={currentGender}
+                  onSelectGender={(gender) => {
+                    updateQueryParam('gender', gender);
                     setMobileFiltersOpen(false);
                   }}
                   minPrice={currentMinPrice}

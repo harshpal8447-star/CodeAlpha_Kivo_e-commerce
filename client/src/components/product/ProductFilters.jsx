@@ -5,6 +5,8 @@ export const ProductFilters = ({
   categories = [],
   selectedCategory,
   onSelectCategory,
+  selectedGender = '',
+  onSelectGender,
   minPrice,
   maxPrice,
   onPriceChange,
@@ -51,6 +53,46 @@ export const ProductFilters = ({
         <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 leading-tight">
           ⚡ 10–15 min instant delivery from local dark stores
         </p>
+      </div>
+
+      {/* Department / Gender Filter (Men, Women, Kids, Unisex) */}
+      <div className="space-y-2">
+        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center justify-between">
+          <span>Department / Gender</span>
+          {selectedGender && (
+            <button
+              onClick={() => onSelectGender && onSelectGender('')}
+              className="text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline"
+            >
+              Clear
+            </button>
+          )}
+        </label>
+        <div className="grid grid-cols-2 gap-1.5">
+          {[
+            { id: '', label: 'All Sections' },
+            { id: 'men', label: '👔 Men' },
+            { id: 'women', label: '👗 Women' },
+            { id: 'kids', label: '🧸 Kids' },
+            { id: 'unisex', label: '✨ Unisex' },
+          ].map((item) => {
+            const isSelected = (!selectedGender && item.id === '') || (selectedGender && selectedGender.toLowerCase() === item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onSelectGender && onSelectGender(item.id)}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold text-center transition-all ${
+                  isSelected
+                    ? 'bg-teal-700 text-white shadow-xs font-bold'
+                    : 'bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Categories */}

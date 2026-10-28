@@ -225,6 +225,7 @@ export const createSellerProduct = async (req, res, next) => {
       images,
       categoryId,
       sku,
+      gender,
     } = req.body;
 
     if (!name || !price || !categoryId) {
@@ -270,6 +271,7 @@ export const createSellerProduct = async (req, res, next) => {
         images: parsedImages,
         categoryId,
         sellerId,
+        gender: gender ? gender.trim().toUpperCase() : 'UNISEX',
         isActive: true,
       },
       include: {
@@ -323,6 +325,7 @@ export const updateSellerProduct = async (req, res, next) => {
       images,
       categoryId,
       isActive,
+      gender,
     } = req.body;
 
     const data = {};
@@ -337,6 +340,7 @@ export const updateSellerProduct = async (req, res, next) => {
     if (stock !== undefined) data.stock = parseInt(stock, 10);
     if (categoryId !== undefined) data.categoryId = categoryId;
     if (isActive !== undefined) data.isActive = Boolean(isActive);
+    if (gender !== undefined) data.gender = gender ? gender.trim().toUpperCase() : 'UNISEX';
 
     if (images !== undefined) {
       data.images = Array.isArray(images)

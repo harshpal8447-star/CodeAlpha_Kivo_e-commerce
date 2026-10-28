@@ -6,6 +6,7 @@ export const getProducts = async (req, res, next) => {
       page = 1,
       limit = 12,
       category,
+      gender,
       search,
       minPrice,
       maxPrice,
@@ -29,6 +30,20 @@ export const getProducts = async (req, res, next) => {
       };
     }
 
+    // Gender / Department filter (men, women, kids)
+    if (gender && gender.trim()) {
+      const g = gender.trim().toUpperCase();
+      if (g === 'MEN') {
+        where.gender = { in: ['MEN', 'UNISEX'] };
+      } else if (g === 'WOMEN') {
+        where.gender = { in: ['WOMEN', 'UNISEX'] };
+      } else if (g === 'KIDS') {
+        where.gender = 'KIDS';
+      } else if (g === 'UNISEX') {
+        where.gender = 'UNISEX';
+      }
+    }
+
     // Kivo Minutes filter (10-15 minute delivery)
     if (minutes === 'true' || minutes === true) {
       where.isMinutesEligible = true;
@@ -44,6 +59,7 @@ export const getProducts = async (req, res, next) => {
         { category: { name: { contains: q } } },
         { category: { slug: { contains: q } } },
         { seller: { storeName: { contains: q } } },
+        { gender: { contains: q } },
       ];
     }
 
