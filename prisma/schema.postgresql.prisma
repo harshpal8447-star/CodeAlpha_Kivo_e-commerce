@@ -67,6 +67,8 @@ model Product {
   categoryId     String
   category       Category    @relation(fields: [categoryId], references: [id])
   isFeatured     Boolean     @default(false)
+  isMinutesEligible Boolean  @default(false)
+  deliveryTimeMinutes Int?   @default(12)
   isActive       Boolean     @default(true)
   rating         Float       @default(4.8)
   reviewCount    Int         @default(0)
@@ -118,6 +120,10 @@ model Order {
   shippingAddress String      // JSON stringified snapshot of full address
   paymentMethod   String      @default("DEMO_PAYMENT")
   paymentStatus   String      @default("PENDING") // PENDING, COMPLETED, FAILED
+  isMinutesDelivery Boolean   @default(false)
+  deliveryEtaMinutes Int?     @default(15)
+  assignedRider   String?
+  riderPhone      String?
   items           OrderItem[]
   payments        Payment[]
   createdAt       DateTime    @default(now())

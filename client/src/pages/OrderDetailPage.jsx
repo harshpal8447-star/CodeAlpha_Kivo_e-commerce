@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   AlertCircle,
   Building,
+  Zap,
+  Phone,
 } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
@@ -77,13 +79,23 @@ export const OrderDetailPage = () => {
       ? JSON.parse(order.shippingAddress)
       : order.shippingAddress;
 
-  const milestones = [
+  const isMinutes = order.isMinutesDelivery || order.orderNumber?.startsWith('KV-MIN-');
+
+  const standardMilestones = [
     { key: 'CONFIRMED', title: 'Order Confirmed', desc: 'Payment verified and inventory locked' },
-    { key: 'PROCESSING', title: 'Processing & Packing', desc: 'Assembled and packaged at warehouse' },
+    { key: 'PROCESSING', title: 'Processing & Packing', desc: 'Assembled and packaged at central fulfillment' },
     { key: 'SHIPPED', title: 'Dispatched & In Transit', desc: 'Handed over to Express Courier (Blue Dart / Delhivery)' },
     { key: 'DELIVERED', title: 'Delivered', desc: 'Package received by customer' },
   ];
 
+  const minutesMilestones = [
+    { key: 'CONFIRMED', title: 'Order Received', desc: 'Routed to Mumbai dark store' },
+    { key: 'PROCESSING', title: 'Picked & Packed', desc: 'Packed into thermal tote in 2 mins' },
+    { key: 'SHIPPED', title: 'Rider Dispatched', desc: 'Electric scooter en route to address' },
+    { key: 'DELIVERED', title: 'Delivered in 12 Mins', desc: 'Handed to customer at doorstep' },
+  ];
+
+  const milestones = isMinutes ? minutesMilestones : standardMilestones;
   const milestoneKeys = milestones.map((m) => m.key);
   const currentStep = order.status === 'CANCELLED' ? -1 : milestoneKeys.indexOf(order.status);
 
@@ -100,7 +112,15 @@ export const OrderDetailPage = () => {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200/80 dark:border-slate-800 gap-4">
         <div>
-          <span className="text-xs text-slate-400 font-medium">Order Reference</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">Order Reference</span>
+            {isMinutes && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full border border-amber-300">
+                <Zap className="w-3 h-3 fill-slate-950 text-slate-950" />
+                <span>Kivo Minutes</span>
+              </span>
+            )}
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-mono">
             {order.orderNumber}
           </h1>
@@ -125,6 +145,72 @@ export const OrderDetailPage = () => {
           <div>
             <strong className="block font-bold text-sm">This order was cancelled.</strong>
             <span>Payment was not processed and inventory was restored.</span>
+          </div>
+        </div>
+      ) : isMinutes ? (
+        <div className="bg-gradient-to-br from-amber-400 via-amber-300 to-yellow-400 text-slate-950 rounded-3xl p-6 sm:p-8 space-y-6 shadow-lg border border-amber-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-950/15 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-slate-950 text-amber-300 flex items-center justify-center font-black shadow">
+                <Zap className="w-6 h-6 fill-amber-400 text-amber-400 animate-pulse" />
+              </div>
+              <div>
+                <h2 className="font-black text-base sm:text-lg tracking-tight">⚡ Kivo Minutes Live Hyperlocal Tracking</h2>
+                <span className="text-xs font-semibold text-slate-800">Packed at Kivo Bandra Dark Store #08</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3.5 py-1 bg-slate-950 text-amber-300 rounded-full font-black text-xs uppercase tracking-wider shadow">
+                {order.status === 'DELIVERED' ? '✔ Delivered in 11 Mins' : '⚡ ETA: Arriving in 12 Mins'}
+              </span>
+            </div>
+          </div>
+
+          {/* Stepper Grid for Minutes */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-2">
+            {milestones.map((m, idx) => {
+              const isCompleted = idx <= (currentStep === -1 ? 0 : currentStep);
+              const isCurrent = idx === currentStep;
+
+              return (
+                <div key={m.key} className="relative flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-xs transition-colors flex-shrink-0 ${
+                      isCompleted
+                        ? 'bg-slate-950 text-amber-300 shadow-md'
+                        : 'bg-amber-500/40 text-slate-800'
+                    }`}
+                  >
+                    {isCompleted ? <CheckCircle2 className="w-5 h-5 text-amber-400" /> : idx + 1}
+                  </div>
+                  <div>
+                    <span className="block font-black text-xs text-slate-950">
+                      {m.title}
+                    </span>
+                    <span className="text-[11px] text-slate-800 block leading-tight mt-0.5 font-medium">
+                      {m.desc}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Rider contact banner */}
+          <div className="p-4 bg-slate-950/10 rounded-2xl border border-slate-950/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-slate-950 text-amber-300 flex items-center justify-center font-bold">
+                🛵
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase text-slate-700">Dedicated Kivo Minutes Rider</span>
+                <div className="font-extrabold text-sm">{order.assignedRider || 'Vikram Sen (Hero Electric Nyx #412)'}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 font-mono font-bold text-xs bg-slate-950 text-white px-3 py-1.5 rounded-xl self-start sm:self-auto">
+              <Phone className="w-3.5 h-3.5 text-amber-400" />
+              <span>{order.riderPhone || '+91 98201 88990'}</span>
+            </div>
           </div>
         </div>
       ) : (
@@ -179,7 +265,7 @@ export const OrderDetailPage = () => {
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-700 text-[11px] text-slate-400 flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 text-teal-600" />
-            <span>Estimated delivery within 2-4 business days via Express Courier.</span>
+            <span>Estimated delivery within 2-4 business days via Express Air Courier.</span>
           </div>
         </div>
       )}

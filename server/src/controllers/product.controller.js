@@ -10,6 +10,7 @@ export const getProducts = async (req, res, next) => {
       minPrice,
       maxPrice,
       inStock,
+      minutes,
       sort = 'featured',
     } = req.query;
 
@@ -22,10 +23,15 @@ export const getProducts = async (req, res, next) => {
     };
 
     // Category filter
-    if (category) {
+    if (category && category.trim()) {
       where.category = {
-        slug: category,
+        slug: category.trim().toLowerCase(),
       };
+    }
+
+    // Kivo Minutes filter (10-15 minute delivery)
+    if (minutes === 'true' || minutes === true) {
+      where.isMinutesEligible = true;
     }
 
     // Search filter

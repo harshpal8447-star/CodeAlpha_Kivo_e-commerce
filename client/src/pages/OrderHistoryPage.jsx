@@ -11,6 +11,7 @@ import {
   Truck,
   RotateCcw,
   AlertCircle,
+  Zap,
 } from 'lucide-react';
 import { orderService } from '../services/order.service.js';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
@@ -131,9 +132,17 @@ export const OrderHistoryPage = () => {
                     <Package className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
-                      {order.orderNumber}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-sm text-slate-900 dark:text-white">
+                        {order.orderNumber}
+                      </span>
+                      {(order.isMinutesDelivery || order.orderNumber?.startsWith('KV-MIN-')) && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full border border-amber-300">
+                          <Zap className="w-3 h-3 fill-slate-950 text-slate-950" />
+                          <span>12 Min Delivery</span>
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-slate-400">
                       Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>

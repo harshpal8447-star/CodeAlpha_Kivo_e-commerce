@@ -235,6 +235,26 @@ export const ProductDetailPage = () => {
             </span>
           </div>
 
+          {/* Kivo Minutes Instant Delivery Pill */}
+          {product.isMinutesEligible && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 dark:from-amber-950/40 dark:via-yellow-950/30 dark:to-amber-950/40 border border-amber-300 dark:border-amber-700/80 flex items-center gap-3.5 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black flex-shrink-0 shadow-sm">
+                <Zap className="w-5 h-5 fill-slate-950 text-slate-950" />
+              </div>
+              <div className="flex-1">
+                <div className="font-black text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
+                  <span>⚡ Kivo Minutes Eligible</span>
+                  <span className="text-[10px] bg-slate-950 text-amber-300 font-black px-2 py-0.5 rounded-full uppercase">
+                    {product.deliveryTimeMinutes || 12} Mins Delivery
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-0.5 font-medium">
+                  In stock at local Mumbai dark store. Select Kivo Minutes express rider dispatch at checkout for instantaneous delivery!
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {product.description}

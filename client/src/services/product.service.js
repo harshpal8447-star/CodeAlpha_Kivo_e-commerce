@@ -9,7 +9,13 @@ export const productService = {
       }
     });
     const res = await api.get(`/products?${query.toString()}`);
-    return res.data;
+    const products = res.data?.products || res.products || [];
+    const pagination = res.data?.pagination || res.pagination || { total: products.length, page: 1, totalPages: 1 };
+    return {
+      products,
+      pagination,
+      data: { products, pagination },
+    };
   },
 
   getFeaturedProducts: async () => {

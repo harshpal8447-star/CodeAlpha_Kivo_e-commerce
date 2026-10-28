@@ -945,12 +945,47 @@ async function main() {
     },
   ];
 
+  const minutesSlugs = new Set([
+    'kivo-studio-anc-headphones',
+    'acoustic-precision-hifi-earbuds',
+    'magnetic-fast-wireless-charging-pad',
+    'studio-condenser-podcast-microphone',
+    'artisanal-ceramic-pour-over-carafe',
+    'handcrafted-ceramic-tumbler-set',
+    'heavyweight-supima-cotton-crewneck',
+    'relaxed-french-terry-cotton-hoodie',
+    'camp-collar-organic-linen-shirt',
+    'rfid-shielded-slim-leather-cardholder',
+    'crossbody-ripstop-utility-sling-pack',
+    'waterproof-tech-organizer-dopp-kit',
+    'breathable-merino-wool-knit-runners',
+    'lightweight-canvas-deck-slip-on',
+    'cedar-amber-hand-poured-soy-candle',
+    'ultrasonic-ceramic-aroma-diffuser',
+    'botanical-hinoki-bergamot-room-mist',
+    'aerospace-aluminum-key-organizer',
+    'polarized-acetate-sunglasses',
+    'solid-brass-rollerball-desk-pen',
+    'full-grain-leather-desk-blotter-pad',
+    'precision-aluminum-laptop-riser',
+    'modular-magnetic-cable-anchor-pack',
+    'ergonomic-contoured-walnut-palm-rest',
+  ]);
+
   const createdProducts = [];
-  for (const prod of productsData) {
-    const created = await prisma.product.create({ data: prod });
+  for (let i = 0; i < productsData.length; i++) {
+    const prod = productsData[i];
+    const isMinutes = minutesSlugs.has(prod.slug) || (i % 2 === 0);
+    const created = await prisma.product.create({
+      data: {
+        ...prod,
+        isMinutesEligible: isMinutes,
+        deliveryTimeMinutes: isMinutes ? (10 + (i % 5)) : null,
+      },
+    });
     createdProducts.push(created);
   }
-  console.log(`✅ Created ${createdProducts.length} realistic products across 8 categories in Indian Rupees (₹).`);
+  console.log(`✅ Created ${createdProducts.length} realistic products across 8 categories in Indian Rupees (₹) with Kivo Minutes support.`);
 
   // 4. Create Initial Product Reviews
   const firstProduct = createdProducts[0]; // Headphones
@@ -1060,6 +1095,70 @@ async function main() {
   });
 
   console.log(`✅ Created sample completed order ${sampleOrder.orderNumber} for ${customer.name} (₹31,267.64).`);
+
+  // 6. Create a Sample Kivo Minutes Instant Order for Sarah Mitchell
+  const minutesOrder = await prisma.order.create({
+    data: {
+      orderNumber: 'KV-MIN-2026-10492',
+      userId: customer.id,
+      customerEmail: customer.email,
+      customerName: customer.name,
+      status: 'DELIVERED',
+      subtotal: 5398.00,
+      shippingFee: 0.00,
+      tax: 971.64,
+      discount: 0.00,
+      total: 6369.64,
+      shippingAddress: JSON.stringify({
+        fullName: 'Sarah Mitchell',
+        street: 'Flat 402, Sea View Apartments, Bandra West',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        postalCode: '400050',
+        country: 'India',
+        phone: '+91 98200 12345',
+      }),
+      paymentMethod: 'UPI_ONLINE',
+      paymentStatus: 'COMPLETED',
+      isMinutesDelivery: true,
+      deliveryEtaMinutes: 12,
+      assignedRider: 'Vikram Sen (Hero Electric Nyx #412)',
+      riderPhone: '+91 98201 88990',
+      items: {
+        create: [
+          {
+            productId: createdProducts[5].id, // Wireless charger
+            productName: createdProducts[5].name,
+            productSku: createdProducts[5].sku,
+            productImage: 'https://images.unsplash.com/photo-1622445268462-9599554a9d70?w=800&q=80',
+            unitPrice: 3499.00,
+            quantity: 1,
+            total: 3499.00,
+          },
+          {
+            productId: createdProducts[30].id, // Soy candle
+            productName: createdProducts[30].name,
+            productSku: createdProducts[30].sku,
+            productImage: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&q=80',
+            unitPrice: 1899.00,
+            quantity: 1,
+            total: 1899.00,
+          },
+        ],
+      },
+      payments: {
+        create: {
+          amount: 6369.64,
+          currency: 'INR',
+          provider: 'UPI_RAZORPAY',
+          status: 'COMPLETED',
+          transactionId: 'TXN-UPI-MIN-10492001',
+          metadata: JSON.stringify({ note: 'Delivered in 11 minutes via Kivo Minutes Bandra Micro-Store' }),
+        },
+      },
+    },
+  });
+  console.log(`✅ Created sample Kivo Minutes order ${minutesOrder.orderNumber} (Delivered in 11 mins by Vikram Sen).`);
   console.log('✨ Kivo database seeding finished successfully!');
 }
 

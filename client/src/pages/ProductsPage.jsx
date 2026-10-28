@@ -4,7 +4,7 @@ import { productService } from '../services/product.service.js';
 import ProductGrid from '../components/product/ProductGrid.jsx';
 import ProductFilters from '../components/product/ProductFilters.jsx';
 import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
-import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, SlidersHorizontal, X, Zap, Clock } from 'lucide-react';
 
 export const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,6 +18,7 @@ export const ProductsPage = () => {
   // Filters from query params or local state
   const currentCategory = searchParams.get('category') || '';
   const currentSearch = searchParams.get('search') || '';
+  const currentMinutes = searchParams.get('minutes') === 'true';
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const currentSort = searchParams.get('sort') || 'featured';
   const currentMinPrice = searchParams.get('minPrice') || '';
@@ -38,6 +39,7 @@ export const ProductsPage = () => {
         limit: 12,
         category: currentCategory,
         search: currentSearch,
+        minutes: currentMinutes ? 'true' : undefined,
         sort: currentSort,
         minPrice: currentMinPrice,
         maxPrice: currentMaxPrice,
@@ -45,8 +47,10 @@ export const ProductsPage = () => {
       };
 
       const res = await productService.getProducts(params);
-      setProducts(res.data.products);
-      setPagination(res.data.pagination);
+      const prods = res.products || res.data?.products || [];
+      const pag = res.pagination || res.data?.pagination || { total: prods.length, page: 1, totalPages: 1 };
+      setProducts(prods);
+      setPagination(pag);
     } catch (err) {
       console.error('Error fetching products:', err);
       setProducts([]);
@@ -57,6 +61,7 @@ export const ProductsPage = () => {
     currentPage,
     currentCategory,
     currentSearch,
+    currentMinutes,
     currentSort,
     currentMinPrice,
     currentMaxPrice,
@@ -93,6 +98,7 @@ export const ProductsPage = () => {
   // Breadcrumb items
   const breadcrumbItems = [
     { label: 'Shop', path: '/products' },
+    ...(currentMinutes ? [{ label: '⚡ Kivo Minutes (10–15 Min Delivery)' }] : []),
     ...(currentCategory
       ? [{ label: categories.find((c) => c.slug === currentCategory)?.name || currentCategory }]
       : []),
@@ -103,28 +109,77 @@ export const ProductsPage = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Breadcrumbs items={breadcrumbItems} />
 
-      {/* Header with Title and Mobile Filter Trigger */}
+      {/* Kivo Minutes Special Banner */}
+      {currentMinutes ? (
+        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 rounded-3xl p-5 sm:p-6 text-slate-950 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-amber-300">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-slate-950 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-md">
+              <Zap className="w-7 h-7 fill-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-extrabold text-base sm:text-lg tracking-tight">Kivo Minutes Hyperlocal Dispatch</h2>
+                <span className="text-[10px] font-black uppercase bg-slate-950 text-amber-300 px-2.5 py-0.5 rounded-full">
+                  10–15 Min Delivery
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-900 mt-0.5 font-medium">
+                Showing essentials stocked at your closest Kivo micro-fulfillment dark store. Dispatched instantly via electric riders!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => updateQueryParam('minutes', '')}
+            className="self-start sm:self-auto px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+          >
+            Show All Products
+          </button>
+        </div>
+      ) : null}
+
+      {/* Header with Title, Minutes Toggle and Mobile Filter Trigger */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200/80 dark:border-slate-800 gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            {currentCategory
-              ? categories.find((c) => c.slug === currentCategory)?.name || 'Category'
-              : currentSearch
-              ? `Search: "${currentSearch}"`
-              : 'All Design Essentials'}
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            {currentMinutes && <Zap className="w-6 h-6 fill-amber-400 text-amber-500" />}
+            <span>
+              {currentMinutes
+                ? 'Kivo Minutes Essentials'
+                : currentCategory
+                ? categories.find((c) => c.slug === currentCategory)?.name || 'Category'
+                : currentSearch
+                ? `Search: "${currentSearch}"`
+                : 'All Design Essentials'}
+            </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Showing {products.length} of {pagination.total} crafted items
           </p>
         </div>
 
-        <button
-          onClick={() => setMobileFiltersOpen(true)}
-          className="lg:hidden flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 shadow-sm"
-        >
-          <SlidersHorizontal className="w-4 h-4 text-teal-700 dark:text-teal-400" />
-          <span>Filters & Sort</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          {/* Kivo Minutes Quick Toggle */}
+          <button
+            onClick={() => updateQueryParam('minutes', currentMinutes ? '' : 'true')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border shadow-sm ${
+              currentMinutes
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-500/20'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-amber-400'
+            }`}
+            title="Toggle instant 10-15 minute delivery products"
+          >
+            <Zap className={`w-4 h-4 ${currentMinutes ? 'fill-slate-950 text-slate-950' : 'text-amber-500 fill-amber-500'}`} />
+            <span>{currentMinutes ? 'Minutes Active (12m)' : '⚡ Kivo Minutes Only'}</span>
+          </button>
+
+          <button
+            onClick={() => setMobileFiltersOpen(true)}
+            className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 shadow-sm"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+            <span>Filters</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Layout */}
@@ -140,6 +195,8 @@ export const ProductsPage = () => {
             onPriceChange={handlePriceChange}
             inStockOnly={currentInStock}
             onToggleInStock={(checked) => updateQueryParam('inStock', checked ? 'true' : '')}
+            minutesOnly={currentMinutes}
+            onToggleMinutes={(checked) => updateQueryParam('minutes', checked ? 'true' : '')}
             sortBy={currentSort}
             onSortChange={(sort) => updateQueryParam('sort', sort)}
             onResetFilters={handleResetFilters}
@@ -176,6 +233,11 @@ export const ProductsPage = () => {
                   onPriceChange={handlePriceChange}
                   inStockOnly={currentInStock}
                   onToggleInStock={(checked) => updateQueryParam('inStock', checked ? 'true' : '')}
+                  minutesOnly={currentMinutes}
+                  onToggleMinutes={(checked) => {
+                    updateQueryParam('minutes', checked ? 'true' : '');
+                    setMobileFiltersOpen(false);
+                  }}
                   sortBy={currentSort}
                   onSortChange={(sort) => updateQueryParam('sort', sort)}
                   onResetFilters={handleResetFilters}

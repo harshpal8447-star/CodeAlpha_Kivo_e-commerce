@@ -9,6 +9,8 @@ import {
   RotateCcw,
   Star,
   CheckCircle2,
+  Zap,
+  Clock,
 } from 'lucide-react';
 import { productService } from '../services/product.service.js';
 import ProductGrid from '../components/product/ProductGrid.jsx';
@@ -158,6 +160,55 @@ export const HomePage = () => {
         </div>
 
         <ProductGrid products={featuredProducts} loading={loading} />
+      </section>
+
+      {/* ⚡ Kivo Minutes Hyperlocal Feature Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-400 text-slate-950 p-8 sm:p-12 shadow-xl border border-amber-300">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 text-amber-300 text-xs font-black uppercase tracking-wider shadow">
+                <Zap className="w-3.5 h-3.5 fill-amber-400" />
+                <span>Introducing Kivo Minutes</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                Premium Essentials, Delivered at Hyperlocal Speed in 10–15 Minutes.
+              </h2>
+              <p className="text-slate-900 text-xs sm:text-sm leading-relaxed font-medium">
+                Like Blinkit and Flipkart Minutes, but designed exclusively for premium lifestyle, workspace, and tech goods. Packed directly from your nearest Kivo micro-fulfillment dark store and delivered instantly by our electric rider fleet.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs font-bold">
+                <div className="flex items-center gap-2 bg-slate-950/10 p-3 rounded-xl border border-slate-950/15">
+                  <Clock className="w-4 h-4 text-slate-950 flex-shrink-0" />
+                  <span>10–15 Min Guarantee</span>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-950/10 p-3 rounded-xl border border-slate-950/15">
+                  <Truck className="w-4 h-4 text-slate-950 flex-shrink-0" />
+                  <span>Electric Fleet Riders</span>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-950/10 p-3 rounded-xl border border-slate-950/15">
+                  <ShieldCheck className="w-4 h-4 text-slate-950 flex-shrink-0" />
+                  <span>Zero Compromise Quality</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-start lg:items-end gap-3 flex-shrink-0">
+              <Link
+                to="/products?minutes=true"
+                className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-slate-950 hover:bg-slate-800 text-amber-300 font-extrabold text-sm sm:text-base shadow-xl hover:scale-105 transition-all"
+              >
+                <Zap className="w-5 h-5 fill-amber-400 text-amber-400" />
+                <span>Shop Kivo Minutes (12m)</span>
+                <ArrowRight className="w-4 h-4 text-amber-300" />
+              </Link>
+              <span className="text-xs font-semibold text-slate-900">
+                ⚡ Dark store active in Bandra, Powai, Indiranagar & Koramangala
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Category Discovery Grid */}

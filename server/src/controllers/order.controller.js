@@ -15,6 +15,7 @@ export const createOrder = async (req, res, next) => {
       paymentMethod = 'DEMO_PAYMENT',
       paymentSimulation = 'SUCCESS', // 'SUCCESS', 'FAILED', or 'PENDING'
       promoCode,
+      isMinutesDelivery = false,
     } = req.body;
 
     if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.street) {
@@ -137,6 +138,10 @@ export const createOrder = async (req, res, next) => {
           shippingAddress: JSON.stringify(shippingAddress),
           paymentMethod,
           paymentStatus,
+          isMinutesDelivery: Boolean(isMinutesDelivery),
+          deliveryEtaMinutes: isMinutesDelivery ? 12 : null,
+          assignedRider: isMinutesDelivery ? 'Vikram Sen (Hero Electric Nyx #412)' : null,
+          riderPhone: isMinutesDelivery ? '+91 98201 88990' : null,
           items: {
             create: itemsToOrder.map((item) => ({
               productId: item.productId,

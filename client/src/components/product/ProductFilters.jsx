@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, RotateCcw, Check } from 'lucide-react';
+import { Filter, RotateCcw, Check, Zap } from 'lucide-react';
 
 export const ProductFilters = ({
   categories = [],
@@ -10,6 +10,8 @@ export const ProductFilters = ({
   onPriceChange,
   inStockOnly,
   onToggleInStock,
+  minutesOnly,
+  onToggleMinutes,
   sortBy,
   onSortChange,
   onResetFilters,
@@ -30,6 +32,25 @@ export const ProductFilters = ({
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset</span>
         </button>
+      </div>
+
+      {/* Kivo Minutes Instant Dispatch Filter */}
+      <div className="p-3 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl space-y-1">
+        <label className="flex items-center justify-between cursor-pointer text-xs font-bold text-slate-900 dark:text-white select-none">
+          <span className="flex items-center gap-1.5 text-amber-950 dark:text-amber-300">
+            <Zap className="w-4 h-4 fill-amber-500 text-amber-600" />
+            <span>Kivo Minutes Only</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={Boolean(minutesOnly)}
+            onChange={(e) => onToggleMinutes && onToggleMinutes(e.target.checked)}
+            className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-amber-400"
+          />
+        </label>
+        <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 leading-tight">
+          ⚡ 10–15 min instant delivery from local dark stores
+        </p>
       </div>
 
       {/* Categories */}

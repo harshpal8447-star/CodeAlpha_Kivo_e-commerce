@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Eye } from 'lucide-react';
+import { Star, ShoppingBag, Eye, Zap } from 'lucide-react';
 import { useCart } from '../../context/CartContext.jsx';
 import { formatINR } from '../../utils/currency.js';
 
@@ -34,7 +34,13 @@ export const ProductCard = ({ product }) => {
         </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+          {product.isMinutesEligible && (
+            <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1 border border-amber-300">
+              <Zap className="w-3 h-3 fill-slate-950 text-slate-950" />
+              <span>{product.deliveryTimeMinutes || 12} MINS</span>
+            </span>
+          )}
           {hasDiscount && (
             <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
               Save {formatINR(product.compareAtPrice - product.price)}

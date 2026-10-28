@@ -12,6 +12,8 @@ import {
   Package,
   LogOut,
   ChevronDown,
+  Zap,
+  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
@@ -20,6 +22,7 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -41,23 +44,35 @@ export const Navbar = () => {
     navigate('/');
   };
 
-  const navCategories = [
-    { name: 'Shop All', path: '/products' },
+  const allCategories = [
     { name: 'Audio & Tech', path: '/products?category=audio-tech' },
     { name: 'Home & Living', path: '/products?category=home-living' },
     { name: 'Apparel', path: '/products?category=apparel' },
     { name: 'Bags & Carry', path: '/products?category=bags-carry' },
+    { name: 'Footwear', path: '/products?category=footwear' },
+    { name: 'Wellness & Scents', path: '/products?category=wellness-scents' },
+    { name: 'Watches & Accessories', path: '/products?category=watches-accessories' },
+    { name: 'Workspace & Desk', path: '/products?category=workspace-desk' },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
-      {/* Top promotional announcement bar */}
-      <div className="bg-slate-900 dark:bg-slate-950 text-slate-200 text-xs py-1.5 px-4 text-center font-medium tracking-wide">
-        <span>Complimentary express delivery across India on orders over ₹999 &bull; 30-Day Hassle-Free Returns</span>
+    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+      {/* Top promotional & Kivo Minutes announcement bar */}
+      <div className="bg-slate-950 text-slate-200 text-xs py-1.5 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 sm:gap-3">
+        <Link
+          to="/products?minutes=true"
+          className="inline-flex items-center gap-1 text-amber-300 font-extrabold bg-amber-950/80 hover:bg-amber-900/80 px-2 py-0.5 rounded-full border border-amber-500/50 text-[10px] sm:text-[11px] transition-colors"
+        >
+          <Zap className="w-3 h-3 fill-amber-400 text-amber-400 animate-pulse" />
+          <span>KIVO MINUTES LIVE</span>
+          <span className="bg-amber-400 text-slate-950 px-1 rounded font-black text-[9px] ml-0.5">10-15 MIN</span>
+        </Link>
+        <span className="hidden sm:inline">&bull; Ultra-fast dark store dispatch across Mumbai &bull; Complimentary on orders over ₹999</span>
+        <span className="sm:hidden">&bull; Free delivery over ₹999</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-4">
           {/* Mobile menu hamburger button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -77,17 +92,70 @@ export const Navbar = () => {
             </span>
           </Link>
 
+          {/* Kivo Minutes Nav Pill */}
+          <Link
+            to="/products?minutes=true"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-xs shadow-sm hover:shadow-md hover:scale-105 transition-all border border-amber-300 group flex-shrink-0"
+            title="Instant 10-15 minute delivery on essentials"
+          >
+            <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950 group-hover:rotate-12 transition-transform" />
+            <span>KIVO MINUTES</span>
+            <span className="bg-slate-950 text-amber-300 text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-0.5">12 MIN</span>
+          </Link>
+
           {/* Desktop Categories Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium text-slate-600 dark:text-slate-300">
-            {navCategories.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1"
+          <nav className="hidden lg:flex items-center space-x-5 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <Link
+              to="/products"
+              className="hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1 font-semibold"
+            >
+              Shop All
+            </Link>
+            <Link
+              to="/products?category=audio-tech"
+              className="hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1"
+            >
+              Audio & Tech
+            </Link>
+            <Link
+              to="/products?category=home-living"
+              className="hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1"
+            >
+              Home & Living
+            </Link>
+            <Link
+              to="/products?category=apparel"
+              className="hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1"
+            >
+              Apparel
+            </Link>
+
+            {/* More Categories Dropdown */}
+            <div className="relative" onMouseLeave={() => setCategoriesDropdownOpen(false)}>
+              <button
+                onClick={() => setCategoriesDropdownOpen(!categoriesDropdownOpen)}
+                onMouseEnter={() => setCategoriesDropdownOpen(true)}
+                className="flex items-center gap-1 hover:text-teal-700 dark:hover:text-teal-400 transition-colors py-1"
               >
-                {item.name}
-              </Link>
-            ))}
+                <span>Categories</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {categoriesDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 z-50 animate-in fade-in">
+                  {allCategories.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      to={cat.path}
+                      onClick={() => setCategoriesDropdownOpen(false)}
+                      className="block px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 hover:text-teal-700"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Search bar */}
@@ -98,7 +166,7 @@ export const Navbar = () => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search design essentials..."
+              placeholder="Search design essentials, audio, tech..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 placeholder-slate-400 text-xs sm:text-sm rounded-full pl-9 pr-4 py-2 border border-transparent focus:border-teal-600 focus:bg-white dark:focus:bg-slate-900 focus:outline-none transition-all"
@@ -226,13 +294,35 @@ export const Navbar = () => {
       {/* Mobile drawer menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 pt-2 pb-6 space-y-3">
-          <nav className="flex flex-col space-y-2">
-            {navCategories.map((item) => (
+          {/* Mobile Kivo Minutes Hero Banner */}
+          <Link
+            to="/products?minutes=true"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-950 font-black text-sm shadow-sm"
+          >
+            <span className="flex items-center gap-2">
+              <Zap className="w-5 h-5 fill-slate-950 text-slate-950" />
+              <span>KIVO MINUTES</span>
+            </span>
+            <span className="text-[10px] bg-slate-950 text-amber-300 font-bold px-2 py-0.5 rounded-full uppercase">
+              10–15 Mins
+            </span>
+          </Link>
+
+          <nav className="flex flex-col space-y-1">
+            <Link
+              to="/products"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-semibold text-slate-900 dark:text-white hover:text-teal-700 py-2 border-b border-slate-100 dark:border-slate-800"
+            >
+              Shop All Products
+            </Link>
+            {allCategories.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-medium text-slate-700 dark:text-slate-200 hover:text-teal-700 py-1.5 border-b border-slate-100 dark:border-slate-800"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-teal-700 py-1.5 border-b border-slate-100 dark:border-slate-800"
               >
                 {item.name}
               </Link>

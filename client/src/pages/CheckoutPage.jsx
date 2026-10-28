@@ -11,6 +11,8 @@ import {
   Banknote,
   MapPin,
   Plus,
+  Zap,
+  Clock,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -46,6 +48,7 @@ export const CheckoutPage = () => {
   // Payment Options
   const [paymentMethod, setPaymentMethod] = useState('DEMO_PAYMENT');
   const [paymentSimulation, setPaymentSimulation] = useState('SUCCESS'); // 'SUCCESS' or 'FAILED'
+  const [isMinutesDelivery, setIsMinutesDelivery] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -151,6 +154,7 @@ export const CheckoutPage = () => {
         paymentMethod,
         paymentSimulation,
         promoCode: passedPromo,
+        isMinutesDelivery,
       });
 
       // Clear local cart
@@ -168,7 +172,9 @@ export const CheckoutPage = () => {
 
   const discount = passedPromo === 'KIVO10' ? parseFloat((cart.subtotal * 0.1).toFixed(2)) : 0;
   const discountedSubtotal = Math.max(0, cart.subtotal - discount);
-  const shippingFee = discountedSubtotal >= 999 ? 0 : 99;
+  const shippingFee = isMinutesDelivery
+    ? (discountedSubtotal >= 999 ? 0 : 29)
+    : (discountedSubtotal >= 999 ? 0 : 99);
   const tax = parseFloat((discountedSubtotal * 0.18).toFixed(2));
   const grandTotal = parseFloat((discountedSubtotal + shippingFee + tax).toFixed(2));
 
@@ -348,12 +354,86 @@ export const CheckoutPage = () => {
             )}
           </div>
 
-          {/* Step 2: Payment Method */}
+          {/* Step 2: Delivery Speed Option */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Truck className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+                <span>2. Delivery Speed</span>
+              </h2>
+              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Zap className="w-3 h-3 fill-amber-500" />
+                <span>Minutes Hub Active</span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Option 1: ⚡ Kivo Minutes Hyperlocal */}
+              <div
+                onClick={() => setIsMinutesDelivery(true)}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  isMinutesDelivery
+                    ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/30 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-amber-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5 font-black text-xs text-slate-950 dark:text-amber-300">
+                    <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    <span>⚡ Kivo Minutes Dispatch</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase bg-slate-950 text-amber-300 px-2 py-0.5 rounded-full">
+                    10–15 Mins
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  Instant dark store dispatch via dedicated electric two-wheeler fleet.
+                </p>
+                <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>Delivery Fee:</span>
+                  <span className="text-teal-700 dark:text-teal-400">
+                    {discountedSubtotal >= 999 ? 'FREE (Orders > ₹999)' : '₹29.00'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Option 2: Standard Delivery */}
+              <div
+                onClick={() => setIsMinutesDelivery(false)}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  !isMinutesDelivery
+                    ? 'border-teal-600 bg-teal-50/50 dark:bg-teal-950/30 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-teal-400'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900 dark:text-white">
+                    <Truck className="w-4 h-4 text-teal-600" />
+                    <span>Standard Express Shipping</span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-500">
+                    1–2 Days
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  Insured air courier dispatch via Blue Dart / Delhivery express.
+                </p>
+                <div className="mt-2 text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>Delivery Fee:</span>
+                  <span className="text-teal-700 dark:text-teal-400">
+                    {discountedSubtotal >= 999 ? 'FREE (Orders > ₹999)' : '₹99.00'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: Payment Method */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
               <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-teal-700 dark:text-teal-400" />
-                <span>2. Payment Provider</span>
+                <span>3. Payment Provider</span>
               </h2>
               <span className="text-[11px] text-teal-700 dark:text-teal-400 font-semibold bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-full">
                 Sandbox / Demo Mode
