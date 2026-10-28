@@ -71,6 +71,7 @@ export const AdminProductsPage = () => {
       name: '',
       slug: '',
       sku: '',
+      gender: 'UNISEX',
       price: '',
       compareAtPrice: '',
       stock: '25',
@@ -89,6 +90,7 @@ export const AdminProductsPage = () => {
       name: product.name,
       slug: product.slug,
       sku: product.sku,
+      gender: product.gender || 'UNISEX',
       price: product.price.toString(),
       compareAtPrice: product.compareAtPrice ? product.compareAtPrice.toString() : '',
       stock: product.stock.toString(),
@@ -598,7 +600,7 @@ export const AdminProductsPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">SKU *</label>
                   <input
@@ -622,6 +624,19 @@ export const AdminProductsPage = () => {
                         {c.name}
                       </option>
                     ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">Department</label>
+                  <select
+                    value={formData.gender || 'UNISEX'}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="UNISEX">✨ Unisex</option>
+                    <option value="MEN">👔 Men</option>
+                    <option value="WOMEN">👗 Women</option>
+                    <option value="KIDS">🧸 Kids</option>
                   </select>
                 </div>
               </div>

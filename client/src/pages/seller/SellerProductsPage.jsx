@@ -77,6 +77,7 @@ export const SellerProductsPage = () => {
       name: '',
       categoryId: categories[0]?.id || '',
       sku: `KV-SEL-${Math.floor(100 + Math.random() * 900)}`,
+      gender: 'UNISEX',
       description: '',
       price: '',
       compareAtPrice: '',
@@ -98,6 +99,7 @@ export const SellerProductsPage = () => {
       name: prod.name,
       categoryId: prod.categoryId,
       sku: prod.sku,
+      gender: prod.gender || 'UNISEX',
       description: prod.description,
       price: prod.price.toString(),
       compareAtPrice: prod.compareAtPrice ? prod.compareAtPrice.toString() : '',
@@ -122,6 +124,7 @@ export const SellerProductsPage = () => {
         name: formData.name,
         categoryId: formData.categoryId || categories[0]?.id,
         sku: formData.sku,
+        gender: formData.gender || 'UNISEX',
         description: formData.description,
         price: parseFloat(formData.price),
         compareAtPrice: formData.compareAtPrice ? parseFloat(formData.compareAtPrice) : null,
@@ -607,8 +610,8 @@ export const SellerProductsPage = () => {
                 />
               </div>
 
-              {/* Category & SKU */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Category, SKU & Target Department */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                     Category *
@@ -636,6 +639,22 @@ export const SellerProductsPage = () => {
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-teal-600"
                   />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    Department
+                  </label>
+                  <select
+                    value={formData.gender || 'UNISEX'}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-600"
+                  >
+                    <option value="UNISEX">✨ Unisex</option>
+                    <option value="MEN">👔 Men</option>
+                    <option value="WOMEN">👗 Women</option>
+                    <option value="KIDS">🧸 Kids</option>
+                  </select>
                 </div>
               </div>
 
