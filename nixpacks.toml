@@ -1,0 +1,20 @@
+# Nixpacks configuration for Railway deployment of Kivo E-Commerce
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = [
+  "npm install --prefix server --omit=dev",
+  "npm install --prefix client --include=dev",
+  "npm install --omit=dev"
+]
+
+[phases.build]
+cmds = [
+  "npx prisma generate --schema=prisma/schema.postgresql.prisma",
+  "npm run build"
+]
+
+[start]
+cmd = "node server/src/server.js"

@@ -6,19 +6,35 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting comprehensive Kivo database seeding (101 Products across 9 Categories + Clothing, Jewellery & Men/Women/Kids + Reviews + Multi-Vendor)...');
 
-  // Clean existing data in reverse relation order
-  await prisma.review.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.address.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.user.deleteMany();
+  // Guard: Protect existing data unless explicitly requested via ALLOW_DESTRUCTIVE_RESET=true
+  const userCount = await prisma.user.count();
+  const productCount = await prisma.product.count();
+  const categoryCount = await prisma.category.count();
 
-  console.log('🧹 Cleaned existing tables.');
+  const hasExistingData = userCount > 0 || productCount > 0 || categoryCount > 0;
+
+  if (hasExistingData && process.env.ALLOW_DESTRUCTIVE_RESET !== 'true') {
+    console.log(`ℹ️ Database already contains data (${userCount} users, ${productCount} products, ${categoryCount} categories).`);
+    console.log('🛡️ Preserving existing records. Skipping seed to prevent accidental data loss.');
+    console.log('ℹ️ To perform a destructive reset, explicitly set ALLOW_DESTRUCTIVE_RESET=true before running.');
+    return;
+  }
+
+  if (process.env.ALLOW_DESTRUCTIVE_RESET === 'true') {
+    console.log('⚠️ Explicit destructive reset enabled (ALLOW_DESTRUCTIVE_RESET=true).');
+    console.log('🧹 Cleaning existing tables in reverse relation order...');
+    await prisma.review.deleteMany();
+    await prisma.payment.deleteMany();
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.cartItem.deleteMany();
+    await prisma.cart.deleteMany();
+    await prisma.address.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.user.deleteMany();
+    console.log('🧹 Cleaned existing tables.');
+  }
 
   // 1. Create Demo Accounts & Verified Reviewers
   const adminPasswordHash = await bcrypt.hash('AdminPassword123!', 10);

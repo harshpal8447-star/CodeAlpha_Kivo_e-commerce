@@ -303,26 +303,148 @@ npm run test:client
 
 ---
 
-## 13. Switching to PostgreSQL
+## 13. Production Deployment Guide (Railway + PostgreSQL + Vercel)
 
-To deploy with PostgreSQL (e.g., Supabase, Neon, AWS RDS, or local PostgreSQL):
+### Architecture Overview
+- **Backend API**: Node.js / Express hosted on [Railway](https://railway.app)
+- **Production Database**: PostgreSQL 16 (Railway PostgreSQL or Supabase PostgreSQL)
+- **Frontend SPA**: React 18 / Vite hosted on [Vercel](https://vercel.com)
+- **Local Development**: Standalone SQLite (`prisma/dev.db`) preserved without changes
 
-1. Set `DATABASE_URL` in `.env`:
-   ```env
-   DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/kivo_db?schema=public"
-   ```
-2. Replace `prisma/schema.prisma` datasource with PostgreSQL (or copy `prisma/schema.postgresql.prisma`):
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
+---
+
+### A. Local Development with SQLite
+Local development continues to use SQLite automatically.
+```powershell
+# 1. Install all dependencies (root, server, client)
+npm run install:all
+
+# 2. Generate local SQLite Prisma client (if needed)
+npm run db:generate
+
+# 3. Start full-stack local development (Express on :5000, Vite on :5173)
+npm run dev
+```
+
+---
+
+### B. Railway Project Setup (Backend)
+1. Go to [Railway Dashboard](https://railway.app/dashboard) and create a **New Project**.
+2. Select **Deploy from GitHub repo** and pick `CodeAlpha_Kivo_e-commerce`.
+3. Railway automatically detects `nixpacks.toml` in the repository root.
+
+---
+
+### C. Database Provisioning (PostgreSQL 16)
+You can use either Railway's built-in PostgreSQL or an existing Supabase PostgreSQL project:
+
+- **Option 1: Supabase PostgreSQL (Existing)**
+  1. Go to your Supabase Project Settings -> **Database** -> **Connection string**.
+  2. Copy the URI connection string (Session Pooler or direct connection on port 5432).
+  3. Ensure your password is URL-encoded if it contains special characters.
+
+- **Option 2: Railway PostgreSQL**
+  1. In your Railway project, click **+ New** -> **Database** -> **Add PostgreSQL**.
+  2. Railway automatically provisions a PostgreSQL 16 database and creates a private connection variable `DATABASE_URL`.
+
+---
+
+### D. Railway Environment Variables
+In your Railway backend service settings, navigate to the **Variables** tab and set:
+
+| Variable | Recommended Production Value | Description |
+|---|---|---|
+| `NODE_ENV` | `production` | Enables production optimisations and secure cookies |
+| `PORT` | `5000` | Optional (Railway automatically assigns and injects `PORT`) |
+| `DATABASE_URL` | `postgresql://...` | PostgreSQL 16 connection string (Supabase or Railway) |
+| `CLIENT_URL` | `https://<your-app>.vercel.app` | Vercel production domain (supports comma-separated URLs) |
+| `JWT_SECRET` | `generate_random_32_char_secret` | Secure JWT signing key (minimum 32 characters) |
+| `JWT_EXPIRES_IN` | `7d` | Token expiry duration |
+| `COOKIE_SECURE` | `true` | Enforces HTTPS-only cookies for cross-domain auth |
+
+---
+
+### E. Running Prisma Production Migrations
+*(One-Time Setup Command)*
+
+Before or right after your first deployment, apply the PostgreSQL migrations to your database:
+
+```powershell
+# In project root:
+# Set DATABASE_URL to your PostgreSQL 16 connection string
+$env:DATABASE_URL="postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres"
+
+# Apply the initial migration safely (creates all tables, indexes, constraints)
+npm run db:migrate:pg
+```
+
+> [!NOTE]
+> `npm run db:migrate:pg` executes `npx prisma migrate deploy --schema=prisma/schema.postgresql.prisma`. It is strictly additive, applies only pending migrations, and never drops or alters existing data.
+
+#### Optional Initial Catalog Seeding:
+If seeding a brand-new database with the default demo products and categories:
+```powershell
+node prisma/seed.js
+```
+*(The seed script is protected by safety guards; it will automatically abort and preserve records if data already exists.)*
+
+---
+
+### F. Deploying Express Backend on Railway
+With `nixpacks.toml` in place, Railway builds and runs the backend automatically:
+1. Railway executes:
+   - `npm install --prefix server --omit=dev`
+   - `npm install --prefix client --include=dev`
+   - `npm install --omit=dev`
+   - `npx prisma generate --schema=prisma/schema.postgresql.prisma`
+   - `npm run build`
+2. Railway starts the server with: `node server/src/server.js`
+
+---
+
+### G. Obtaining Railway Public Backend URL
+1. In the Railway service view, go to **Settings** -> **Networking** -> **Public Networking**.
+2. Click **Generate Domain** (e.g., `https://kivo-production-xxxx.up.railway.app`).
+3. Note this domain — you will use it as `VITE_API_URL` on Vercel.
+
+---
+
+### H. Deploying React Frontend on Vercel
+1. Log in to [Vercel](https://vercel.com) and click **Add New...** -> **Project**.
+2. Import your GitHub repository (`CodeAlpha_Kivo_e-commerce`).
+3. In Project Configuration:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `client` *(Important: click Edit and select the `client` folder)*
+   - **Build Command**: `npm run build` (or `vite build`)
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+
+---
+
+### I. Setting VITE_API_URL and CLIENT_URL
+1. In Vercel Project Settings -> **Environment Variables**, add:
+   - Key: `VITE_API_URL`
+   - Value: `https://<your-railway-backend-url>.up.railway.app/api`
+   *(Both `https://.../api` and `https://...` are accepted; the client automatically normalizes the path).*
+2. In Railway Service Settings -> **Variables**, update:
+   - `CLIENT_URL`: `https://<your-vercel-domain>.vercel.app`
+3. Redeploy frontend on Vercel and backend on Railway so the new variables take effect.
+
+---
+
+### J. Verifying the Live Application
+1. **Health Check**: Open `https://<your-railway-backend>.up.railway.app/api/health` in your browser. Expected response:
+   ```json
+   {
+     "status": "healthy",
+     "brand": "Kivo E-Commerce",
+     "database": "connected",
+     "environment": "production"
    }
    ```
-3. Deploy migrations and seed:
-   ```powershell
-   npx prisma db push
-   npm run db:seed
-   ```
+2. **Product Catalog**: Open `https://<your-vercel-app>.vercel.app`. Verify products load with correct pricing, categories, and images.
+3. **Authentication**: Test login with demo customer or admin credentials. Verify JWT token and session cookies are set correctly.
+4. **Cart & Checkout**: Add an item to the cart and verify demo checkout completes with order generation.
 
 ---
 

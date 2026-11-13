@@ -5,6 +5,14 @@ CREATE TABLE "User" (
     "passwordHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'CUSTOMER',
+    "storeName" TEXT,
+    "companyName" TEXT,
+    "sellerGstin" TEXT,
+    "sellerPhone" TEXT,
+    "sellerCity" TEXT,
+    "sellerAddress" TEXT,
+    "sellerBio" TEXT,
+    "isSellerApproved" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -20,7 +28,7 @@ CREATE TABLE "Address" (
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
     "postalCode" TEXT NOT NULL,
-    "country" TEXT NOT NULL DEFAULT 'United States',
+    "country" TEXT NOT NULL DEFAULT 'India',
     "phone" TEXT,
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -50,10 +58,16 @@ CREATE TABLE "Product" (
     "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "compareAtPrice" DOUBLE PRECISION,
+    "minutesPrice" DOUBLE PRECISION,
+    "isMinutesEligible" BOOLEAN NOT NULL DEFAULT false,
+    "deliveryTimeMinutes" INTEGER DEFAULT 12,
+    "minutesCategory" TEXT,
     "sku" TEXT NOT NULL,
     "stock" INTEGER NOT NULL DEFAULT 0,
+    "gender" TEXT DEFAULT 'UNISEX',
     "images" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
+    "sellerId" TEXT,
     "isFeatured" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "rating" DOUBLE PRECISION NOT NULL DEFAULT 4.8,
@@ -102,6 +116,10 @@ CREATE TABLE "Order" (
     "shippingAddress" TEXT NOT NULL,
     "paymentMethod" TEXT NOT NULL DEFAULT 'DEMO_PAYMENT',
     "paymentStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "isMinutesDelivery" BOOLEAN NOT NULL DEFAULT false,
+    "deliveryEtaMinutes" INTEGER DEFAULT 15,
+    "assignedRider" TEXT,
+    "riderPhone" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -113,12 +131,15 @@ CREATE TABLE "OrderItem" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "productId" TEXT,
+    "sellerId" TEXT,
     "productName" TEXT NOT NULL,
     "productSku" TEXT,
     "productImage" TEXT,
     "unitPrice" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
     "total" DOUBLE PRECISION NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'CONFIRMED',
+    "isMinutesItem" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
@@ -128,7 +149,7 @@ CREATE TABLE "Payment" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
-    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "currency" TEXT NOT NULL DEFAULT 'INR',
     "provider" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
@@ -154,6 +175,8 @@ CREATE TABLE "Review" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
@@ -161,13 +184,27 @@ CREATE INDEX "Address_userId_idx" ON "Address"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Product_sku_key" ON "Product"("sku");
+
+-- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
-CREATE INDEX "Product_isFeatured_idx" ON "Product"("isFeatured");
+
+-- CreateIndex
+CREATE INDEX "Product_sellerId_idx" ON "Product"("sellerId");
+
+-- CreateIndex
+CREATE INDEX "Product_isMinutesEligible_idx" ON "Product"("isMinutesEligible");
+
+-- CreateIndex
+CREATE INDEX "Product_isActive_idx" ON "Product"("isActive");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cart_userId_key" ON "Cart"("userId");
@@ -177,18 +214,32 @@ CREATE UNIQUE INDEX "CartItem_cartId_productId_key" ON "CartItem"("cartId", "pro
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Order_orderNumber_key" ON "Order"("orderNumber");
+
+-- CreateIndex
 CREATE INDEX "Order_userId_idx" ON "Order"("userId");
+
+-- CreateIndex
+CREATE INDEX "Order_orderNumber_idx" ON "Order"("orderNumber");
+
+-- CreateIndex
 CREATE INDEX "Order_status_idx" ON "Order"("status");
 
 -- CreateIndex
 CREATE INDEX "OrderItem_orderId_idx" ON "OrderItem"("orderId");
 
 -- CreateIndex
+CREATE INDEX "OrderItem_sellerId_idx" ON "OrderItem"("sellerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_transactionId_key" ON "Payment"("transactionId");
+
+-- CreateIndex
 CREATE INDEX "Payment_orderId_idx" ON "Payment"("orderId");
 
 -- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
+
+-- CreateIndex
 CREATE INDEX "Review_userId_idx" ON "Review"("userId");
 
 -- AddForeignKey
@@ -196,6 +247,9 @@ ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -214,6 +268,9 @@ ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("or
 
 -- AddForeignKey
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
