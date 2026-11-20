@@ -20,7 +20,9 @@
     "db:migrate:pg": "npx prisma migrate deploy --schema=prisma/schema.postgresql.prisma",
     "db:push": "npx prisma db push",
     "db:seed": "node prisma/seed.js",
+    "db:seed:pg": "npx prisma generate --schema=prisma/schema.postgresql.prisma && node prisma/seed.js && npx prisma generate --schema=prisma/schema.prisma",
     "db:setup": "npm run db:migrate && npm run db:seed",
+    "db:setup:pg": "npm run db:migrate:pg && npm run db:seed:pg",
     "test": "npm run test --prefix server",
     "test:client": "npm run test --prefix client"
   },

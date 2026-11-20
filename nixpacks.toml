@@ -17,4 +17,4 @@ cmds = [
 ]
 
 [start]
-cmd = "node server/src/server.js"
+cmd = "npx prisma migrate deploy --schema=prisma/schema.postgresql.prisma && node prisma/seed.js && node server/src/server.js"

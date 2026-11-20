@@ -1,10 +1,16 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from './config/index.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Route imports
 import healthRoutes from './routes/health.routes.js';
@@ -24,13 +30,14 @@ app.set('trust proxy', 1);
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
   })
 );
 
 // CORS configuration
 const configuredOrigins = (config.clientUrl || '')
   .split(',')
-  .map((u) => u.trim().replace(/\/+$/, ''))
+  .map((u) => u.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
   .filter(Boolean);
 
 const allowedOrigins = [
@@ -45,11 +52,20 @@ app.use(
       // allow requests with no origin (like mobile apps, curl, or same-origin)
       if (!origin) return callback(null, true);
 
-      const normalizedOrigin = origin.trim().replace(/\/+$/, '');
-      if (allowedOrigins.includes(normalizedOrigin) || process.env.NODE_ENV !== 'production') {
+      const normalizedOrigin = origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+      const isAllowedPlatform =
+        normalizedOrigin.endsWith('.vercel.app') ||
+        normalizedOrigin.endsWith('.up.railway.app') ||
+        normalizedOrigin.endsWith('.railway.app');
+
+      if (
+        allowedOrigins.includes(normalizedOrigin) ||
+        isAllowedPlatform ||
+        process.env.NODE_ENV !== 'production'
+      ) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -75,6 +91,16 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/seller', sellerRoutes);
+
+// Serve built frontend static assets if present (allows full-stack access on Railway URL too)
+const clientDistPath = path.resolve(__dirname, '../../client/dist');
+if (fs.existsSync(path.join(clientDistPath, 'index.html'))) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 // 404 & Centralized Error Handlers
 app.use(notFoundHandler);
